@@ -70,6 +70,8 @@
   </style>
 </head>
 <body>
+  <!-- DEBUG: temporary banner to verify the page and JS are loading. Remove after debugging. -->
+  <div id="debug-banner" style="position:fixed;left:12px;top:12px;background:#ffef9f;color:#111;padding:8px 10px;border-radius:8px;z-index:9999;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,0.08)">DEBUG: page loaded</div>
   <header>
     <div class="container nav">
       <div class="brand">
@@ -305,6 +307,9 @@
 
     // Attach handler after DOM is ready (avoids relying on inline event handlers)
     document.addEventListener('DOMContentLoaded', function(){
+      console.log('DOMContentLoaded: script running');
+      const banner = document.getElementById('debug-banner');
+      if (banner) banner.textContent = 'DEBUG: DOM ready';
       const form = document.getElementById('contactForm');
       if(form) form.addEventListener('submit', handleSubmit);
     });
