@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EdForEd — Tutoring & Learning</title>
+  <meta name="description" content="EdForEd: friendly, experienced tutoring in math, science, and English. Flexible scheduling, tailored lesson plans, and proven results." />
+
+  <!-- Simple, self-contained styles (no external libs) -->
+  <style>
+    :root{
+      --accent:#3b82f6; /* blue */
+      --muted:#6b7280;
+      --card:#ffffff;
+      --bg:#f8fafc;
+      --radius:12px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #111827;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg)}
+    a{color:var(--accent);text-decoration:none}
+    header{background:linear-gradient(90deg,rgba(59,130,246,0.08),transparent);backdrop-filter: blur(2px);}
+    .container{max-width:1100px;margin:0 auto;padding:28px}
+
+    /* Navbar */
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:44px;height:44px;background:var(--accent);display:inline-grid;place-items:center;color:white;border-radius:8px;font-weight:700}
+    nav ul{display:flex;gap:12px;list-style:none;padding:0;margin:0}
+    nav li{padding:6px 10px;border-radius:8px}
+    nav li a{font-weight:600}
+    .cta{background:var(--accent);color:white;padding:10px 14px;border-radius:10px;font-weight:700}
+
+    /* Hero */
+    .hero{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:center;padding:28px 0}
+    .hero h1{font-size:28px;margin:0 0 12px}
+    .hero p{color:var(--muted);margin:0 0 18px}
+    .btn-row{display:flex;gap:12px}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:white}
+    .primary{background:var(--accent);color:white;border:0}
+
+    /* Card sections */
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(15,23,42,0.04)}
+
+    /* About */
+    .about{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start}
+    .avatar{width:100%;height:240px;background:linear-gradient(135deg,#e0f2fe,#dbeafe);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .avatar img{width:160px;height:160px;border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,0.85)}
+    .bio h3{margin:0 0 8px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .chip{background:#f1f5f9;padding:6px 10px;border-radius:999px;font-size:13px}
+
+    /* Testimonials */
+    .testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+
+    /* Contact */
+    form{display:grid;gap:10px}
+    input,textarea,select{padding:10px;border-radius:8px;border:1px solid #e6edf6;font-size:14px}
+    button[type="submit"]{padding:10px 14px;border-radius:8px;background:var(--accent);color:white;border:0}
+
+    footer{padding:28px 0;color:var(--muted);font-size:14px}
+
+    /* Responsive */
+    @media (max-width:900px){
+      .hero{grid-template-columns:1fr}
+      .about{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo">EF</div>
+        <div>
+          <div style="font-weight:800">EdForEd</div>
+          <div style="font-size:13px;color:var(--muted)">Personalized tutoring</div>
+        </div>
+      </div>
+
+      <nav aria-label="Main navigation">
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#subjects">Subjects</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#testimonials">Testimonials</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="cta" href="#contact">Book a Trial</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="home">
+    <section class="hero">
+      <div>
+        <h1>Friendly, results-driven tutoring — built around the student.</h1>
+        <p>One-on-one tutoring for K–12 and college-level subjects. Flexible scheduling, tailored lesson plans, homework help, and exam prep.</p>
+        <div class="btn-row">
+          <a class="btn primary" href="#contact">Book a Free Trial</a>
+          <a class="btn" href="#subjects">See Subjects</a>
+        </div>
+
+        <div style="margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div class="card" style="padding:12px">Experienced tutors<br><strong>5+ years</strong></div>
+          <div class="card" style="padding:12px">Flexible schedule<br><strong>Evenings & weekends</strong></div>
+          <div class="card" style="padding:12px">Proven results<br><strong>Improved grades</strong></div>
+        </div>
+      </div>
+
+      <aside class="card">
+        <h3>Get started</h3>
+        <p style="color:var(--muted);margin:8px 0">Free 30‑minute trial lesson for new students. Tell us your goals and we’ll create a plan.</p>
+        <ul style="margin:8px 0 16px;color:var(--muted)">
+          <li>Personalized lesson plans</li>
+          <li>Progress tracking</li>
+          <li>Homework review</li>
+        </ul>
+        <a class="btn primary" href="#contact">Book trial</a>
+      </aside>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" style="margin-top:28px">
+      <div class="about">
+        <div class="avatar card">
+          <!-- Replace src with real photo in GitHub -->
+          <img src="https://via.placeholder.com/160" alt="Tutor photo" />
+          <div style="text-align:center;margin-top:10px;font-weight:700">Jordan Lee</div>
+          <div style="font-size:13px;color:var(--muted);text-align:center">B.S. Mathematics • Certified Tutor</div>
+        </div>
+
+        <div class="bio">
+          <h2>About me</h2>
+          <p>I’m Jordan — a patient, encouraging tutor who focuses on building strong fundamentals and confident problem‑solving skills. I’ve worked with students across grades K–12 and college-level courses in math, physics, and writing.</p>
+
+          <h3 style="margin-top:12px">Teaching approach</h3>
+          <p style="color:var(--muted)">Lessons are tailored to each student’s learning style and goals. I use short concept checks, worked examples, and practice problems to reinforce learning. Regular progress checks keep us on track.</p>
+
+          <div class="chips">
+            <div class="chip">SAT/ACT Prep</div>
+            <div class="chip">AP Calculus</div>
+            <div class="chip">Algebra & Geometry</div>
+            <div class="chip">Essay Editing</div>
+          </div>
+
+          <h3>Credentials</h3>
+          <ul style="color:var(--muted)">
+            <li>B.S. Mathematics — State University</li>
+            <li>5+ years tutoring experience</li>
+            <li>References available on request</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Subjects & Services -->
+    <section id="subjects" style="margin-top:28px">
+      <h2>Subjects & Services</h2>
+      <div class="cards" style="margin-top:12px">
+        <div class="card">
+          <h4>Math</h4>
+          <p style="color:var(--muted)">Arithmetic through calculus — remedial and advanced.</p>
+        </div>
+        <div class="card">
+          <h4>Science</h4>
+          <p style="color:var(--muted)">Biology, Chemistry, Physics — lab concept help & problem solving.</p>
+        </div>
+        <div class="card">
+          <h4>English & Writing</h4>
+          <p style="color:var(--muted)">Essay structure, grammar, and reading comprehension.</p>
+        </div>
+        <div class="card">
+          <h4>Test Prep</h4>
+          <p style="color:var(--muted)">SAT, ACT, AP exams — strategy + practice tests.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" style="margin-top:28px">
+      <h2>Pricing</h2>
+      <div class="cards" style="margin-top:12px">
+        <div class="card">
+          <h4>Trial</h4>
+          <p style="font-weight:700;margin:6px 0">Free — 30 minutes</p>
+          <p style="color:var(--muted)">One-time trial to meet the tutor and set goals.</p>
+        </div>
+        <div class="card">
+          <h4>Standard</h4>
+          <p style="font-weight:700;margin:6px 0">$45 / hour</p>
+          <p style="color:var(--muted)">Weekly sessions recommended for steady progress.</p>
+        </div>
+        <div class="card">
+          <h4>Premium</h4>
+          <p style="font-weight:700;margin:6px 0">$65 / hour</p>
+          <p style="color:var(--muted)">Includes progress reports & prioritized scheduling.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" style="margin-top:28px">
+      <h2>Testimonials</h2>
+      <div class="testimonials" style="margin-top:12px">
+        <div class="card">
+          <p>“My daughter improved her math grade from a C to an A in one semester.”</p>
+          <p style="color:var(--muted);font-weight:700;margin-top:8px">— Satisfied Parent</p>
+        </div>
+        <div class="card">
+          <p>“Clear explanations and great practice problems — helped me pass AP Calculus.”</p>
+          <p style="color:var(--muted);font-weight:700;margin-top:8px">— Former Student</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT / BOOKING -->
+    <section id="contact" style="margin-top:28px">
+      <h2>Contact & Booking</h2>
+      <div class="card" style="margin-top:12px;display:grid;grid-template-columns:1fr 360px;gap:14px">
+        <div>
+          <form id="contactForm" action="#">
+            <label for="name">Full name</label>
+            <input id="name" name="name" type="text" required placeholder="Student or parent name" />
+
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required placeholder="you@example.com" />
+
+            <label for="subject">Subject / Goal</label>
+            <select id="subject" name="subject">
+              <option>Math — Algebra / Geometry</option>
+              <option>Math — Precalculus / Calculus</option>
+              <option>Science — Physics / Chemistry</option>
+              <option>English & Writing</option>
+              <option>Test Prep — SAT / ACT / AP</option>
+            </select>
+
+            <label for="message">Message (availability, grade, goals)</label>
+            <textarea id="message" name="message" rows="4" placeholder="Prefer evenings? Tell us your goals..." required></textarea>
+
+            <button type="submit">Request a Trial</button>
+          </form>
+        </div>
+
+        <aside style="padding:16px">
+          <h4>Availability (example)</h4>
+          <p style="color:var(--muted)">Weekdays: 5pm–9pm<br/>Weekends: 9am–4pm</p>
+
+          <h4 style="margin-top:10px">What to expect</h4>
+          <ol style="color:var(--muted)">
+            <li>30min trial to discuss goals</li>
+            <li>Custom plan & practice set</li>
+            <li>Regular feedback & homework help</li>
+          </ol>
+        </aside>
+      </div>
+    </section>
+
+    <!-- FAQ small -->
+    <section style="margin-top:28px">
+      <h2>FAQ</h2>
+      <div style="display:grid;gap:8px;margin-top:12px">
+        <div class="card">
+          <strong>Do you offer in-person sessions?</strong>
+          <p style="color:var(--muted)">Mostly online, limited local in-person sessions depending on location.</p>
+        </div>
+        <div class="card">
+          <strong>What materials do students need?</strong>
+          <p style="color:var(--muted)">A notebook, calculator for math/science, and access to any assigned homework.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div>© EdForEd — Personalized Tutoring</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function handleSubmit(e){
+      e.preventDefault();
+      const form = e.currentTarget || e.target;
+      const name = form.querySelector('#name').value.trim();
+      const email = form.querySelector('#email').value.trim();
+      if(!name || !email){
+        alert('Please enter name and email.');
+        return;
+      }
+      // Basic local feedback. Replace with real backend or Formspree integration.
+      alert('Thanks ' + name + '! Your request was received. We will reply by email.');
+      if (typeof form.reset === 'function') form.reset();
+    }
+
+    // Attach handler after DOM is ready (avoids relying on inline event handlers)
+    document.addEventListener('DOMContentLoaded', function(){
+      const form = document.getElementById('contactForm');
+      if(form) form.addEventListener('submit', handleSubmit);
+    });
+  </script>
+</body>
+</html>
