@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { ArrowLeft } from "lucide-react"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
@@ -59,6 +60,10 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10 bg-gradient-to-br from-blue-50 to-white">
       <div className="w-full max-w-sm">
+        <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-blue-600 mb-6">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Link>
         <div className="flex flex-col gap-6">
           <div className="text-center mb-4">
             <h1 className="text-3xl font-bold text-blue-600">Edfored</h1>

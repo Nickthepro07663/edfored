@@ -58,6 +58,7 @@ export function Header() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     localStorage.removeItem("adminSession")
+    sessionStorage.removeItem("admin_active")
     setUser(null)
     setUserRole(null)
     router.push("/")
@@ -81,7 +82,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
             <Link
               href="/"
               className={`transition-colors ${pathname === "/" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
@@ -95,10 +96,28 @@ export function Header() {
               Services
             </Link>
             <Link
+              href="/tutors"
+              className={`transition-colors ${pathname === "/tutors" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
+            >
+              Tutors
+            </Link>
+            <Link
+              href="/pricing"
+              className={`transition-colors ${pathname === "/pricing" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
+            >
+              Pricing
+            </Link>
+            <Link
               href="/about"
               className={`transition-colors ${pathname === "/about" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
             >
               About
+            </Link>
+            <Link
+              href="/faq"
+              className={`transition-colors ${pathname === "/faq" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
+            >
+              FAQ
             </Link>
             <Link
               href="/contact"
@@ -154,8 +173,17 @@ export function Header() {
             <Link href="/services" className="text-left text-foreground hover:text-primary transition-colors">
               Services
             </Link>
+            <Link href="/tutors" className="text-left text-foreground hover:text-primary transition-colors">
+              Tutors
+            </Link>
+            <Link href="/pricing" className="text-left text-foreground hover:text-primary transition-colors">
+              Pricing
+            </Link>
             <Link href="/about" className="text-left text-foreground hover:text-primary transition-colors">
               About
+            </Link>
+            <Link href="/faq" className="text-left text-foreground hover:text-primary transition-colors">
+              FAQ
             </Link>
             <Link href="/contact" className="text-left text-foreground hover:text-primary transition-colors">
               Contact

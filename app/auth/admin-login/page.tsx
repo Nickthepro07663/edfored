@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Shield } from "lucide-react"
+import { Shield, ArrowLeft } from "lucide-react"
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("")
@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
           timestamp: Date.now(),
           rememberMe: rememberMe,
         }
-        localStorage.setItem("admin_session", JSON.stringify(sessionData))
+        localStorage.setItem("adminSession", JSON.stringify(sessionData))
         sessionStorage.setItem("admin_active", "true")
         router.push("/admin")
       } else if (username === "Nick" && password === "Nick_0711") {
@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
           timestamp: Date.now(),
           rememberMe: rememberMe,
         }
-        localStorage.setItem("admin_session", JSON.stringify(sessionData))
+        localStorage.setItem("adminSession", JSON.stringify(sessionData))
         sessionStorage.setItem("admin_active", "true")
         router.push("/owner")
       } else {
@@ -56,6 +56,10 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10 bg-gradient-to-br from-blue-50 to-white">
       <div className="w-full max-w-sm">
+        <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-blue-600 mb-6">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Link>
         <div className="flex flex-col gap-6">
           <div className="text-center mb-4">
             <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
@@ -100,7 +104,7 @@ export default function AdminLoginPage() {
                       onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                     />
                     <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-                      Remember me
+                      Remember me (7 days)
                     </Label>
                   </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}

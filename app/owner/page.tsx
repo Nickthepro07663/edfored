@@ -43,7 +43,7 @@ export default function OwnerDashboard() {
   const supabase = createClient()
 
   useEffect(() => {
-    const adminSessionStr = localStorage.getItem("admin_session")
+    const adminSessionStr = localStorage.getItem("adminSession")
     const isActive = sessionStorage.getItem("admin_active")
 
     if (!adminSessionStr || !isActive) {
@@ -58,15 +58,14 @@ export default function OwnerDashboard() {
         return
       }
 
-      // Check if session expired (24 hours for non-remember me)
-      if (!sessionData.rememberMe) {
-        const hoursSinceLogin = (Date.now() - sessionData.timestamp) / (1000 * 60 * 60)
-        if (hoursSinceLogin > 24) {
-          localStorage.removeItem("admin_session")
-          sessionStorage.removeItem("admin_active")
-          router.push("/auth/admin-login")
-          return
-        }
+      // Check if session expired (7 days for remember me, 24 hours otherwise)
+      const maxAge = sessionData.rememberMe ? 7 * 24 : 24
+      const hoursSinceLogin = (Date.now() - sessionData.timestamp) / (1000 * 60 * 60)
+      if (hoursSinceLogin > maxAge) {
+        localStorage.removeItem("adminSession")
+        sessionStorage.removeItem("admin_active")
+        router.push("/auth/admin-login")
+        return
       }
 
       setIsAuthenticated(true)
@@ -148,7 +147,7 @@ export default function OwnerDashboard() {
   }
 
   const handleSignOut = () => {
-    localStorage.removeItem("admin_session")
+    localStorage.removeItem("adminSession")
     sessionStorage.removeItem("admin_active")
     router.push("/auth/admin-login")
   }

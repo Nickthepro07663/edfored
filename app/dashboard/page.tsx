@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Calendar, CheckCircle, XCircle, LogOut } from "lucide-react"
+import { Calendar, CheckCircle, LogOut, TrendingUp, Clock } from "lucide-react"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -30,6 +30,10 @@ export default async function DashboardPage() {
     .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
+
+  const totalHours = bookings?.length || 0
+  const completedSessions = bookings?.filter((b) => b.status === "completed").length || 0
+  const upcomingSessions = bookings?.filter((b) => b.status === "confirmed" || b.status === "pending").length || 0
 
   const handleSignOut = async () => {
     "use server"
@@ -63,7 +67,7 @@ export default async function DashboardPage() {
           <p className="text-gray-600">{user.email}</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
@@ -77,23 +81,34 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Paid Sessions</CardTitle>
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{bookings?.filter((b) => b.is_paid).length || 0}</div>
-              <p className="text-xs text-gray-600">Completed payments</p>
+              <div className="text-2xl font-bold">{completedSessions}</div>
+              <p className="text-xs text-gray-600">Finished sessions</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
-              <XCircle className="h-4 w-4 text-orange-600" />
+              <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
+              <Clock className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{bookings?.filter((b) => !b.is_paid).length || 0}</div>
-              <p className="text-xs text-gray-600">Awaiting payment</p>
+              <div className="text-2xl font-bold">{upcomingSessions}</div>
+              <p className="text-xs text-gray-600">Scheduled sessions</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Learning Hours</CardTitle>
+              <TrendingUp className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalHours}</div>
+              <p className="text-xs text-gray-600">Total hours invested</p>
             </CardContent>
           </Card>
         </div>
@@ -117,12 +132,17 @@ export default async function DashboardPage() {
                         {new Date(booking.preferred_date).toLocaleDateString()} at {booking.preferred_time}
                       </CardDescription>
                     </div>
-                    <Badge
-                      variant={booking.is_paid ? "default" : "secondary"}
-                      className={booking.is_paid ? "bg-green-600" : "bg-orange-500"}
-                    >
-                      {booking.is_paid ? "Paid" : "Pending Payment"}
-                    </Badge>
+                    <div className="flex gap-2">
+                      <Badge
+                        variant={booking.is_paid ? "default" : "secondary"}
+                        className={booking.is_paid ? "bg-green-600" : "bg-orange-500"}
+                      >
+                        {booking.is_paid ? "Paid" : "Pending Payment"}
+                      </Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {booking.status}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -132,8 +152,8 @@ export default async function DashboardPage() {
                       <span className="font-medium">{booking.grade_level}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Status:</span>
-                      <span className="font-medium capitalize">{booking.status}</span>
+                      <span className="text-gray-600">Booked on:</span>
+                      <span className="font-medium">{new Date(booking.created_at).toLocaleDateString()}</span>
                     </div>
                     {booking.message && (
                       <div className="mt-2 pt-2 border-t">
