@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Calendar, CheckCircle, XCircle, LogOut } from "lucide-react"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "My Dashboard - Edfored",
+  description: "View your tutoring sessions, payment status, and booking history.",
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -36,10 +42,12 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-blue-600">Edfored</h1>
-            <p className="text-sm text-gray-600">Student Dashboard</p>
-          </div>
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <div>
+              <h1 className="text-2xl font-bold text-blue-600">Edfored</h1>
+              <p className="text-sm text-gray-600">Student Dashboard</p>
+            </div>
+          </Link>
           <form action={handleSignOut}>
             <Button variant="outline" size="sm" type="submit">
               <LogOut className="h-4 w-4 mr-2" />

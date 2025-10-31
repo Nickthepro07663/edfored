@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -13,6 +14,7 @@ import { Shield } from "lucide-react"
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -24,12 +26,22 @@ export default function AdminLoginPage() {
 
     try {
       if (username === "edfored" && password === "Admin") {
-        localStorage.setItem("admin_session", "true")
-        localStorage.setItem("admin_role", "admin")
+        const sessionData = {
+          role: "admin",
+          timestamp: Date.now(),
+          rememberMe: rememberMe,
+        }
+        localStorage.setItem("admin_session", JSON.stringify(sessionData))
+        sessionStorage.setItem("admin_active", "true")
         router.push("/admin")
       } else if (username === "Nick" && password === "Nick_0711") {
-        localStorage.setItem("admin_session", "true")
-        localStorage.setItem("admin_role", "owner")
+        const sessionData = {
+          role: "owner",
+          timestamp: Date.now(),
+          rememberMe: rememberMe,
+        }
+        localStorage.setItem("admin_session", JSON.stringify(sessionData))
+        sessionStorage.setItem("admin_active", "true")
         router.push("/owner")
       } else {
         setError("Invalid admin credentials")
@@ -80,6 +92,16 @@ export default function AdminLoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="remember"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    />
+                    <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+                      Remember me
+                    </Label>
                   </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <Button type="submit" className="w-full" disabled={isLoading}>

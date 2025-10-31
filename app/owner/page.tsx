@@ -43,14 +43,37 @@ export default function OwnerDashboard() {
   const supabase = createClient()
 
   useEffect(() => {
-    const adminSession = localStorage.getItem("admin_session")
-    const adminRole = localStorage.getItem("admin_role")
-    if (adminSession !== "true" || adminRole !== "owner") {
+    const adminSessionStr = localStorage.getItem("admin_session")
+    const isActive = sessionStorage.getItem("admin_active")
+
+    if (!adminSessionStr || !isActive) {
       router.push("/auth/admin-login")
       return
     }
-    setIsAuthenticated(true)
-    fetchProfiles()
+
+    try {
+      const sessionData = JSON.parse(adminSessionStr)
+      if (sessionData.role !== "owner") {
+        router.push("/auth/admin-login")
+        return
+      }
+
+      // Check if session expired (24 hours for non-remember me)
+      if (!sessionData.rememberMe) {
+        const hoursSinceLogin = (Date.now() - sessionData.timestamp) / (1000 * 60 * 60)
+        if (hoursSinceLogin > 24) {
+          localStorage.removeItem("admin_session")
+          sessionStorage.removeItem("admin_active")
+          router.push("/auth/admin-login")
+          return
+        }
+      }
+
+      setIsAuthenticated(true)
+      fetchProfiles()
+    } catch (error) {
+      router.push("/auth/admin-login")
+    }
   }, [router])
 
   const fetchProfiles = async () => {
@@ -126,7 +149,7 @@ export default function OwnerDashboard() {
 
   const handleSignOut = () => {
     localStorage.removeItem("admin_session")
-    localStorage.removeItem("admin_role")
+    sessionStorage.removeItem("admin_active")
     router.push("/auth/admin-login")
   }
 

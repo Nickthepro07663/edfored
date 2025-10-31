@@ -7,9 +7,9 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "EduMaster Tutoring - Expert Academic Support",
+  title: "Edfored - Excellence in Education",
   description:
-    "Professional tutoring services for students of all ages. Expert tutors in math, science, languages, and more.",
+    "Professional tutoring services for students of all ages. Expert tutors in math, science, languages, and more. Book your session today!",
   generator: "v0.app",
 }
 

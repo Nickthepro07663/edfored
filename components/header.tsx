@@ -1,14 +1,73 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, GraduationCap } from "lucide-react"
+import { Menu, X, GraduationCap, LogOut } from "lucide-react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = createClient()
+
+  const [user, setUser] = useState<any>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Check for authenticated user
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setUser(user)
+
+      if (user) {
+        // Check if admin/owner from localStorage
+        const adminSession = localStorage.getItem("adminSession")
+        if (adminSession) {
+          const session = JSON.parse(adminSession)
+          setUserRole(session.role)
+        } else {
+          // Regular user
+          setUserRole("user")
+        }
+      }
+      setIsLoading(false)
+    }
+
+    checkUser()
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (!session?.user) {
+        setUserRole(null)
+        localStorage.removeItem("adminSession")
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase.auth])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    localStorage.removeItem("adminSession")
+    setUser(null)
+    setUserRole(null)
+    router.push("/")
+  }
+
+  const getDashboardLink = () => {
+    if (userRole === "owner") return "/owner"
+    if (userRole === "admin") return "/admin"
+    return "/dashboard"
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -47,12 +106,31 @@ export function Header() {
             >
               Contact
             </Link>
-            <Link
-              href="/auth/login"
-              className={`transition-colors ${pathname === "/auth/login" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
-            >
-              Login
-            </Link>
+            {!isLoading &&
+              (user ? (
+                <>
+                  <Link
+                    href={getDashboardLink()}
+                    className={`transition-colors ${pathname === getDashboardLink() ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-foreground hover:text-primary transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  className={`transition-colors ${pathname === "/auth/login" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
+                >
+                  Login
+                </Link>
+              ))}
           </nav>
 
           <div className="hidden md:block">
@@ -82,9 +160,28 @@ export function Header() {
             <Link href="/contact" className="text-left text-foreground hover:text-primary transition-colors">
               Contact
             </Link>
-            <Link href="/auth/login" className="text-left text-foreground hover:text-primary transition-colors">
-              Login
-            </Link>
+            {!isLoading &&
+              (user ? (
+                <>
+                  <Link
+                    href={getDashboardLink()}
+                    className="text-left text-foreground hover:text-primary transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-left text-foreground hover:text-primary transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link href="/auth/login" className="text-left text-foreground hover:text-primary transition-colors">
+                  Login
+                </Link>
+              ))}
             <Link href="/booking">
               <Button className="w-full">Book a Session</Button>
             </Link>

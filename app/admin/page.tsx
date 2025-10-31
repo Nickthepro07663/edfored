@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Calendar, Users, DollarSign, LogOut, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import Link from "next/link"
 
 interface Booking {
   id: string
@@ -35,14 +36,34 @@ export default function AdminDashboard() {
   const supabase = createClient()
 
   useEffect(() => {
-    const adminSession = localStorage.getItem("admin_session")
-    const adminRole = localStorage.getItem("admin_role")
-    if (adminSession !== "true" || (adminRole !== "admin" && adminRole !== "owner")) {
+    const adminSessionStr = localStorage.getItem("adminSession")
+
+    if (!adminSessionStr) {
       router.push("/auth/admin-login")
       return
     }
-    setIsAuthenticated(true)
-    fetchBookings()
+
+    try {
+      const sessionData = JSON.parse(adminSessionStr)
+      if (sessionData.role !== "admin" && sessionData.role !== "owner") {
+        router.push("/auth/admin-login")
+        return
+      }
+
+      // Check if session expired (7 days for remember me, 24 hours otherwise)
+      const maxAge = sessionData.rememberMe ? 7 * 24 : 24
+      const hoursSinceLogin = (Date.now() - sessionData.timestamp) / (1000 * 60 * 60)
+      if (hoursSinceLogin > maxAge) {
+        localStorage.removeItem("adminSession")
+        router.push("/auth/admin-login")
+        return
+      }
+
+      setIsAuthenticated(true)
+      fetchBookings()
+    } catch (error) {
+      router.push("/auth/admin-login")
+    }
   }, [router])
 
   const fetchBookings = async () => {
@@ -78,13 +99,8 @@ export default function AdminDashboard() {
   }
 
   const handleSignOut = () => {
-    localStorage.removeItem("admin_session")
-    localStorage.removeItem("admin_role")
-    router.push("/auth/admin-login")
-  }
-
-  const handleManageUsers = () => {
-    router.push("/owner")
+    localStorage.removeItem("adminSession")
+    router.push("/")
   }
 
   if (!isAuthenticated) {
@@ -94,21 +110,27 @@ export default function AdminDashboard() {
   const totalBookings = bookings.length
   const paidBookings = bookings.filter((b) => b.is_paid).length
   const pendingBookings = bookings.filter((b) => !b.is_paid).length
-  const adminRole = localStorage.getItem("admin_role")
+
+  const adminSessionStr = localStorage.getItem("adminSession")
+  const adminRole = adminSessionStr ? JSON.parse(adminSessionStr).role : null
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-blue-600">Edfored Admin</h1>
-            <p className="text-sm text-gray-600">Administrative Dashboard</p>
-          </div>
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <div>
+              <h1 className="text-2xl font-bold text-blue-600">Edfored Admin</h1>
+              <p className="text-sm text-gray-600">Administrative Dashboard</p>
+            </div>
+          </Link>
           <div className="flex gap-2">
             {adminRole === "owner" && (
-              <Button variant="outline" size="sm" onClick={handleManageUsers}>
-                Manage Users
-              </Button>
+              <Link href="/owner">
+                <Button variant="outline" size="sm">
+                  Manage Users
+                </Button>
+              </Link>
             )}
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
