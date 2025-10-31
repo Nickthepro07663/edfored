@@ -2,15 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { ArrowRight, BookOpen, Users, Award } from "lucide-react"
+import Link from "next/link"
 
 export function Hero() {
-  const scrollToBooking = () => {
-    const element = document.getElementById("booking")
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
   return (
     <section
       id="home"
@@ -20,20 +14,24 @@ export function Hero() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-balance leading-tight">
-              Unlock Your Academic Potential with Expert Tutoring
+              Unlock Your Academic Potential with Edfored
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
               Personalized one-on-one tutoring sessions designed to help students excel in their studies. From
               elementary to college level, we've got you covered.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="text-lg" onClick={scrollToBooking}>
-                Get Started Today
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg bg-transparent">
-                Learn More
-              </Button>
+              <Link href="/booking">
+                <Button size="lg" className="text-lg">
+                  Get Started Today
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <Link href="/about">
+                <Button size="lg" variant="outline" className="text-lg bg-transparent">
+                  Learn More
+                </Button>
+              </Link>
             </div>
 
             <div className="grid grid-cols-3 gap-6 pt-8">
@@ -65,7 +63,7 @@ export function Hero() {
             <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary to-accent p-1">
               <div className="w-full h-full rounded-xl bg-background flex items-center justify-center">
                 <img
-                  src="/students-studying-with-tutor-in-modern-classroom.jpg"
+                  src="/students-studying-with-tutor.jpg"
                   alt="Students learning"
                   className="w-full h-full object-cover rounded-xl"
                 />

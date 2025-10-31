@@ -1,12 +1,14 @@
 import { Header } from "@/components/header"
-import { Hero } from "@/components/hero"
+import { Contact } from "@/components/contact"
 import { Footer } from "@/components/footer"
 
-export default function Home() {
+export default function ContactPage() {
   return (
     <main className="min-h-screen">
       <Header />
-      <Hero />
+      <div className="pt-20">
+        <Contact />
+      </div>
       <Footer />
     </main>
   )

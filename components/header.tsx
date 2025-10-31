@@ -3,67 +3,62 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, GraduationCap } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-      setIsMenuOpen(false)
-    }
-  }
+  const pathname = usePathname()
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">EduMaster</span>
-          </div>
+            <span className="text-xl font-bold text-foreground">Edfored</span>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => scrollToSection("home")}
-              className="text-foreground hover:text-primary transition-colors"
+            <Link
+              href="/"
+              className={`transition-colors ${pathname === "/" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
             >
               Home
-            </button>
-            <button
-              onClick={() => scrollToSection("services")}
-              className="text-foreground hover:text-primary transition-colors"
+            </Link>
+            <Link
+              href="/services"
+              className={`transition-colors ${pathname === "/services" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
             >
               Services
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className="text-foreground hover:text-primary transition-colors"
+            </Link>
+            <Link
+              href="/about"
+              className={`transition-colors ${pathname === "/about" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
             >
               About
-            </button>
-            <button
-              onClick={() => scrollToSection("testimonials")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Testimonials
-            </button>
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="text-foreground hover:text-primary transition-colors"
+            </Link>
+            <Link
+              href="/contact"
+              className={`transition-colors ${pathname === "/contact" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
             >
               Contact
-            </button>
+            </Link>
+            <Link
+              href="/auth/login"
+              className={`transition-colors ${pathname === "/auth/login" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
+            >
+              Login
+            </Link>
           </nav>
 
           <div className="hidden md:block">
-            <Button onClick={() => scrollToSection("booking")} size="lg">
-              Book a Session
-            </Button>
+            <Link href="/booking">
+              <Button size="lg">Book a Session</Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -75,39 +70,24 @@ export function Header() {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 flex flex-col gap-4">
-            <button
-              onClick={() => scrollToSection("home")}
-              className="text-left text-foreground hover:text-primary transition-colors"
-            >
+            <Link href="/" className="text-left text-foreground hover:text-primary transition-colors">
               Home
-            </button>
-            <button
-              onClick={() => scrollToSection("services")}
-              className="text-left text-foreground hover:text-primary transition-colors"
-            >
+            </Link>
+            <Link href="/services" className="text-left text-foreground hover:text-primary transition-colors">
               Services
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className="text-left text-foreground hover:text-primary transition-colors"
-            >
+            </Link>
+            <Link href="/about" className="text-left text-foreground hover:text-primary transition-colors">
               About
-            </button>
-            <button
-              onClick={() => scrollToSection("testimonials")}
-              className="text-left text-foreground hover:text-primary transition-colors"
-            >
-              Testimonials
-            </button>
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="text-left text-foreground hover:text-primary transition-colors"
-            >
+            </Link>
+            <Link href="/contact" className="text-left text-foreground hover:text-primary transition-colors">
               Contact
-            </button>
-            <Button onClick={() => scrollToSection("booking")} className="w-full">
-              Book a Session
-            </Button>
+            </Link>
+            <Link href="/auth/login" className="text-left text-foreground hover:text-primary transition-colors">
+              Login
+            </Link>
+            <Link href="/booking">
+              <Button className="w-full">Book a Session</Button>
+            </Link>
           </nav>
         )}
       </div>

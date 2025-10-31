@@ -1,12 +1,14 @@
 import { Header } from "@/components/header"
-import { Hero } from "@/components/hero"
+import { Services } from "@/components/services"
 import { Footer } from "@/components/footer"
 
-export default function Home() {
+export default function ServicesPage() {
   return (
     <main className="min-h-screen">
       <Header />
-      <Hero />
+      <div className="pt-20">
+        <Services />
+      </div>
       <Footer />
     </main>
   )

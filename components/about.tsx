@@ -32,10 +32,10 @@ export function About() {
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">About EduMaster Tutoring</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">About Edfored Tutoring</h2>
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p className="text-lg">
-                Founded in 2015, EduMaster Tutoring has been dedicated to helping students achieve their academic goals
+                Founded in 2015, Edfored Tutoring has been dedicated to helping students achieve their academic goals
                 through personalized, high-quality education.
               </p>
               <p className="text-lg">

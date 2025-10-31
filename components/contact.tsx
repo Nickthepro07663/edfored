@@ -19,8 +19,8 @@ export function Contact() {
                 <Mail className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold mb-2 text-foreground">Email Us</h3>
-              <p className="text-sm text-muted-foreground">info@edumaster.com</p>
-              <p className="text-sm text-muted-foreground">support@edumaster.com</p>
+              <p className="text-sm text-muted-foreground">info@edfored.com</p>
+              <p className="text-sm text-muted-foreground">support@edfored.com</p>
             </CardContent>
           </Card>
 
