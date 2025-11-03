@@ -10,19 +10,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, Clock, User, Check } from "lucide-react"
+import { Calendar, Clock, User } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { TUTORING_SESSIONS } from "@/lib/products"
-import Checkout from "@/components/checkout"
+import PayPalButton from "@/components/paypal-button"
 
 export default function BookingClientPage() {
   const { toast } = useToast()
   const router = useRouter()
   const supabase = createClient()
   const [isLoading, setIsLoading] = useState(false)
-  const [step, setStep] = useState<"form" | "package" | "payment">("form")
+  const [step, setStep] = useState<"form" | "method" | "payment">("form")
+  const [bookingMethod, setBookingMethod] = useState<"custom" | "calendly">("custom")
   const [selectedPackage, setSelectedPackage] = useState<string>("")
   const [bookingId, setBookingId] = useState<string>("")
   const [formData, setFormData] = useState({
@@ -41,13 +42,11 @@ export default function BookingClientPage() {
     setIsLoading(true)
 
     try {
-      // Check if user is authenticated
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
       if (!user) {
-        // Redirect to login if not authenticated
         toast({
           title: "Authentication Required",
           description: "Please log in or create an account to book a session.",
@@ -57,7 +56,7 @@ export default function BookingClientPage() {
         return
       }
 
-      setStep("package")
+      setStep("method")
     } catch (error) {
       console.error("Error:", error)
       toast({
@@ -68,6 +67,14 @@ export default function BookingClientPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleCalendlyBooking = () => {
+    window.open("https://calendly.com/edfored/session", "_blank")
+    toast({
+      title: "Success",
+      description: "Opening Calendly scheduling page...",
+    })
   }
 
   const handlePackageSelect = async (packageId: string) => {
@@ -84,7 +91,6 @@ export default function BookingClientPage() {
         return
       }
 
-      // Insert booking into database
       const { data, error } = await supabase
         .from("bookings")
         .insert({
@@ -123,6 +129,14 @@ export default function BookingClientPage() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handlePaymentSuccess = () => {
+    toast({
+      title: "Success",
+      description: "Your session has been booked and paid!",
+    })
+    router.push("/dashboard")
+  }
+
   return (
     <main className="min-h-screen">
       <Header />
@@ -134,7 +148,7 @@ export default function BookingClientPage() {
               <p className="text-lg text-muted-foreground leading-relaxed">
                 {step === "form" &&
                   "Ready to get started? Fill out the form below and we'll match you with the perfect tutor for your needs."}
-                {step === "package" && "Choose a tutoring package that fits your needs."}
+                {step === "method" && "Choose how you'd like to schedule your session."}
                 {step === "payment" && "Complete your payment to confirm your booking."}
               </p>
             </div>
@@ -287,55 +301,57 @@ export default function BookingClientPage() {
                     </div>
 
                     <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Processing..." : "Continue to Package Selection"}
+                      {isLoading ? "Processing..." : "Continue"}
                     </Button>
                   </form>
                 </CardContent>
               </Card>
             )}
 
-            {step === "package" && (
+            {step === "method" && (
               <div className="space-y-6">
-                <div className="grid md:grid-cols-3 gap-6">
-                  {TUTORING_SESSIONS.map((session) => (
-                    <Card
-                      key={session.id}
-                      className={`border-2 cursor-pointer transition-all hover:shadow-lg ${
-                        selectedPackage === session.id ? "border-primary" : "border-border"
-                      }`}
-                      onClick={() => handlePackageSelect(session.id)}
-                    >
-                      <CardHeader>
-                        <CardTitle className="text-xl">{session.name}</CardTitle>
-                        <CardDescription>{session.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="text-3xl font-bold text-primary">
-                            ${(session.priceInCents / 100).toFixed(2)}
-                          </div>
-                          <div className="text-sm text-muted-foreground">Duration: {session.duration}</div>
-                          <Button
-                            className="w-full"
-                            disabled={isLoading}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handlePackageSelect(session.id)
-                            }}
-                          >
-                            {isLoading && selectedPackage === session.id ? (
-                              "Processing..."
-                            ) : (
-                              <>
-                                <Check className="w-4 h-4 mr-2" />
-                                Select Package
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card
+                    className="border-2 cursor-pointer transition-all hover:shadow-lg hover:border-primary"
+                    onClick={() => setBookingMethod("custom")}
+                  >
+                    <CardHeader>
+                      <CardTitle>Custom Booking</CardTitle>
+                      <CardDescription>Book directly through our platform</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Select a tutoring package and proceed to payment. Your booking will be confirmed after payment.
+                      </p>
+                      <Button
+                        className="w-full"
+                        onClick={() => {
+                          handlePackageSelect("")
+                        }}
+                      >
+                        Continue with Custom Booking
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card
+                    className="border-2 cursor-pointer transition-all hover:shadow-lg hover:border-primary"
+                    onClick={handleCalendlyBooking}
+                  >
+                    <CardHeader>
+                      <CardTitle>Calendly Scheduling</CardTitle>
+                      <CardDescription>Schedule directly with our interactive calendar</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Use our Calendly integration to see real-time availability and schedule your session instantly.
+                        Syncs with calendar apps.
+                      </p>
+                      <Button variant="default" className="w-full" onClick={handleCalendlyBooking}>
+                        Open Calendly
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
                 <Button variant="outline" onClick={() => setStep("form")} className="w-full">
                   Back to Form
@@ -343,14 +359,18 @@ export default function BookingClientPage() {
               </div>
             )}
 
-            {step === "payment" && selectedPackage && bookingId && (
+            {step === "payment" && bookingId && (
               <Card className="border-border">
                 <CardHeader>
                   <CardTitle className="text-foreground">Complete Payment</CardTitle>
-                  <CardDescription className="text-muted-foreground">Secure payment powered by Stripe</CardDescription>
+                  <CardDescription className="text-muted-foreground">Secure payment powered by PayPal</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Checkout sessionId={selectedPackage} bookingId={bookingId} />
+                  <PayPalButton
+                    amount={(TUTORING_SESSIONS.find((s) => s.id === selectedPackage)?.priceInCents || 0).toString()}
+                    bookingId={bookingId}
+                    onSuccess={handlePaymentSuccess}
+                  />
                 </CardContent>
               </Card>
             )}

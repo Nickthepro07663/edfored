@@ -32,11 +32,12 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [adminRole, setAdminRole] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
-    const adminSessionStr = localStorage.getItem("adminSession")
+    const adminSessionStr = localStorage.getItem("adminSession") || localStorage.getItem("staffSession")
 
     if (!adminSessionStr) {
       router.push("/auth/admin-login")
@@ -45,20 +46,21 @@ export default function AdminDashboard() {
 
     try {
       const sessionData = JSON.parse(adminSessionStr)
-      if (sessionData.role !== "admin" && sessionData.role !== "owner") {
+      if (sessionData.role !== "admin" && sessionData.role !== "owner" && sessionData.role !== "staff") {
         router.push("/auth/admin-login")
         return
       }
 
-      // Check if session expired (7 days for remember me, 24 hours otherwise)
       const maxAge = sessionData.rememberMe ? 7 * 24 : 24
       const hoursSinceLogin = (Date.now() - sessionData.timestamp) / (1000 * 60 * 60)
       if (hoursSinceLogin > maxAge) {
         localStorage.removeItem("adminSession")
+        localStorage.removeItem("staffSession")
         router.push("/auth/admin-login")
         return
       }
 
+      setAdminRole(sessionData.role)
       setIsAuthenticated(true)
       fetchBookings()
     } catch (error) {
@@ -100,6 +102,7 @@ export default function AdminDashboard() {
 
   const handleSignOut = () => {
     localStorage.removeItem("adminSession")
+    localStorage.removeItem("staffSession")
     router.push("/")
   }
 
@@ -110,9 +113,6 @@ export default function AdminDashboard() {
   const totalBookings = bookings.length
   const paidBookings = bookings.filter((b) => b.is_paid).length
   const pendingBookings = bookings.filter((b) => !b.is_paid).length
-
-  const adminSessionStr = localStorage.getItem("adminSession")
-  const adminRole = adminSessionStr ? JSON.parse(adminSessionStr).role : null
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
@@ -129,6 +129,13 @@ export default function AdminDashboard() {
               <Link href="/owner">
                 <Button variant="outline" size="sm">
                   Manage Users
+                </Button>
+              </Link>
+            )}
+            {adminRole === "staff" && (
+              <Link href="/staff">
+                <Button variant="outline" size="sm">
+                  Manage Sessions
                 </Button>
               </Link>
             )}

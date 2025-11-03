@@ -41,7 +41,7 @@ const faqs = [
   {
     question: "What payment methods do you accept?",
     answer:
-      "We accept all major credit cards, debit cards, and digital payment methods through our secure Stripe payment gateway. All transactions are encrypted and secure.",
+      "We accept all major credit cards, debit cards, and digital payment methods through our secure PayPal payment gateway. All transactions are encrypted and secure.",
   },
   {
     question: "Can I get a refund if I'm not satisfied?",
