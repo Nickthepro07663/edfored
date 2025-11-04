@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Calendar, Users, DollarSign, LogOut, Loader2 } from "lucide-react"
+import { Calendar, Users, DollarSign, LogOut, Loader2, Clock } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 
@@ -37,9 +37,10 @@ export default function AdminDashboard() {
   const supabase = createClient()
 
   useEffect(() => {
-    const adminSessionStr = localStorage.getItem("adminSession") || localStorage.getItem("staffSession")
+    const adminSessionStr = localStorage.getItem("adminSession")
+    const isActive = sessionStorage.getItem("admin_active")
 
-    if (!adminSessionStr) {
+    if (!adminSessionStr || !isActive) {
       router.push("/auth/admin-login")
       return
     }
@@ -55,7 +56,7 @@ export default function AdminDashboard() {
       const hoursSinceLogin = (Date.now() - sessionData.timestamp) / (1000 * 60 * 60)
       if (hoursSinceLogin > maxAge) {
         localStorage.removeItem("adminSession")
-        localStorage.removeItem("staffSession")
+        sessionStorage.removeItem("admin_active")
         router.push("/auth/admin-login")
         return
       }
@@ -102,7 +103,7 @@ export default function AdminDashboard() {
 
   const handleSignOut = () => {
     localStorage.removeItem("adminSession")
-    localStorage.removeItem("staffSession")
+    sessionStorage.removeItem("admin_active")
     router.push("/")
   }
 
@@ -113,6 +114,10 @@ export default function AdminDashboard() {
   const totalBookings = bookings.length
   const paidBookings = bookings.filter((b) => b.is_paid).length
   const pendingBookings = bookings.filter((b) => !b.is_paid).length
+
+  const upcomingSessions = bookings
+    .filter((b) => new Date(b.preferred_date) >= new Date())
+    .sort((a, b) => new Date(a.preferred_date).getTime() - new Date(b.preferred_date).getTime())
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
@@ -129,13 +134,6 @@ export default function AdminDashboard() {
               <Link href="/owner">
                 <Button variant="outline" size="sm">
                   Manage Users
-                </Button>
-              </Link>
-            )}
-            {adminRole === "staff" && (
-              <Link href="/staff">
-                <Button variant="outline" size="sm">
-                  Manage Sessions
                 </Button>
               </Link>
             )}
@@ -186,6 +184,46 @@ export default function AdminDashboard() {
               <p className="text-xs text-gray-600">Awaiting payment</p>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="mb-8">
+          <h3 className="text-2xl font-bold mb-4">Upcoming Sessions Calendar</h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {upcomingSessions.length > 0 ? (
+              upcomingSessions.slice(0, 6).map((booking) => (
+                <Card key={booking.id} className="border-l-4 border-l-blue-500">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-base">{booking.name}</CardTitle>
+                        <CardDescription className="text-xs">{booking.subject}</CardDescription>
+                      </div>
+                      <Badge
+                        variant={booking.is_paid ? "default" : "secondary"}
+                        className={booking.is_paid ? "bg-green-600" : "bg-orange-500"}
+                      >
+                        {booking.is_paid ? "Paid" : "Unpaid"}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(booking.preferred_date).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Clock className="h-4 w-4" />
+                      {booking.preferred_time}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="md:col-span-2 lg:col-span-3">
+                <CardContent className="py-8 text-center text-gray-600">No upcoming sessions scheduled</CardContent>
+              </Card>
+            )}
+          </div>
         </div>
 
         <div className="mb-6">

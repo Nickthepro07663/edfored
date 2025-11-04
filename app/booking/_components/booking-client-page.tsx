@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { TUTORING_SESSIONS } from "@/lib/products"
-import PayPalButton from "@/components/paypal-button"
+import VenmoButton from "@/components/venmo-button"
 
 export default function BookingClientPage() {
   const { toast } = useToast()
@@ -363,11 +363,11 @@ export default function BookingClientPage() {
               <Card className="border-border">
                 <CardHeader>
                   <CardTitle className="text-foreground">Complete Payment</CardTitle>
-                  <CardDescription className="text-muted-foreground">Secure payment powered by PayPal</CardDescription>
+                  <CardDescription className="text-muted-foreground">Secure payment via Venmo</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <PayPalButton
-                    amount={(TUTORING_SESSIONS.find((s) => s.id === selectedPackage)?.priceInCents || 0).toString()}
+                  <VenmoButton
+                    amount={TUTORING_SESSIONS.find((s) => s.id === selectedPackage)?.priceInCents || 0}
                     bookingId={bookingId}
                     onSuccess={handlePaymentSuccess}
                   />

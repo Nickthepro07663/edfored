@@ -153,6 +153,7 @@ export default function OwnerDashboard() {
   }
 
   const handleViewBookings = () => {
+    sessionStorage.setItem("admin_active", "true")
     router.push("/admin")
   }
 
