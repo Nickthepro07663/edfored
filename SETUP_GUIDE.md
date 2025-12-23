@@ -10,20 +10,24 @@ Add these environment variables to your Vercel project:
 - `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
 - `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` - Development redirect URL (e.g., http://localhost:3000)
 
-### PayPal Configuration
-- `NEXT_PUBLIC_PAYPAL_CLIENT_ID` - Your PayPal Client ID (from Developer Dashboard)
-- `PAYPAL_CLIENT_SECRET` - Your PayPal Client Secret (from Developer Dashboard)
+### Venmo Configuration
+- `NEXT_PUBLIC_VENMO_USERNAME` - Your Venmo username (e.g., @edfored)
+- `VENMO_PHONE` - Your Venmo phone number (format: 1234567890)
+
+### Cron Job Security (Optional but recommended)
+- `CRON_SECRET` - Random secret string for securing the keep-alive endpoint
 
 ### Calendly Configuration
 Update the Calendly URL in the booking page:
 - Replace `https://calendly.com/edfored/session` with your actual Calendly booking link
 
-## Setting Up PayPal
+## Setting Up Venmo
 
-1. Go to [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/)
-2. Create an App in the Sandbox environment
-3. Get your Client ID and Secret
-4. Add them to your environment variables
+1. Download the Venmo mobile app and create an account
+2. Set up your profile with a username (e.g., @edfored)
+3. Add your username to `NEXT_PUBLIC_VENMO_USERNAME`
+4. Add your phone number to `VENMO_PHONE`
+5. Students will see a payment button that generates a Venmo payment link
 
 ## Setting Up Calendly
 
@@ -31,6 +35,24 @@ Update the Calendly URL in the booking page:
 2. Create your account and set up your scheduling page
 3. Update the booking page with your Calendly URL
 4. Calendly bookings automatically sync with your Google Calendar, Outlook, etc.
+
+## Supabase Keep-Alive System
+
+The app includes an automated keep-alive system to prevent Supabase from pausing:
+
+1. **Vercel Deployment (Automatic)**
+   - Cron job configured in `vercel.json` runs every 6 hours
+   - No additional setup needed
+
+2. **External Cron Service**
+   - Set up at [cron-job.org](https://cron-job.org) or similar
+   - URL: `https://your-domain.com/api/cron/keep-alive`
+   - Schedule: Every 6 hours
+   - Add header: `Authorization: Bearer YOUR_CRON_SECRET`
+
+3. **For Production**: Consider upgrading to Supabase Pro plan ($25/month) to avoid pausing entirely
+
+See `SUPABASE_SETUP.md` for detailed instructions.
 
 ## Default Admin Credentials
 
@@ -53,7 +75,8 @@ The app uses Supabase with the following main tables:
 - User authentication with Supabase
 - Role-based access control (Owner, Admin, Staff, User)
 - Booking system with Calendly integration
-- PayPal payment processing
+- Venmo payment processing
 - Calendar sync capabilities
 - Admin dashboard for managing bookings and payments
 - Owner dashboard for user management
+- Automated Supabase keep-alive system
