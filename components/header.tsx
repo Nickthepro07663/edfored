@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, GraduationCap, LogOut } from "lucide-react"
 import Link from "next/link"
@@ -11,7 +11,7 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = createClient()
 
   const [user, setUser] = useState<any>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
