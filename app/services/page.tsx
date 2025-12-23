@@ -4,9 +4,9 @@ import { Footer } from "@/components/footer"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Our Services - Edfored Tutoring",
+  title: "Services & Pricing - EDforED Tutoring",
   description:
-    "Explore our comprehensive tutoring services including Math, Science, English, Languages, Computer Science, Test Prep, Music, and Arts.",
+    "Explore our comprehensive tutoring services taught by qualified high-schoolers. Academics, Languages, Music, Computer Science, and Chess tutoring for K-8 students.",
 }
 
 export default function ServicesPage() {

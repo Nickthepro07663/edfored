@@ -1,8 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
-// This route can be called by a cron job service (like cron-job.org or Vercel Cron)
-// to keep the Supabase database active and prevent it from pausing
 export async function GET(request: Request) {
   try {
     // Verify the request is from a cron job (optional security)
@@ -13,26 +11,29 @@ export async function GET(request: Request) {
 
     const supabase = await createClient()
 
-    // Simple query to keep the connection alive
-    const { data, error } = await supabase.from("bookings").select("id").limit(1)
+    // Perform multiple random queries to keep the database active
+    const queries = [
+      supabase.from("bookings").select("id").limit(1),
+      supabase.from("bookings").select("count"),
+      supabase.from("admin_users").select("username").limit(1),
+      supabase.from("bookings").select("created_at").order("created_at", { ascending: false }).limit(5),
+    ]
 
-    if (error) {
-      console.error("[v0] Keep-alive error:", error)
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        },
-        { status: 500 },
-      )
-    }
+    // Execute all queries in parallel
+    const results = await Promise.allSettled(queries)
 
-    console.log("[v0] Supabase keep-alive successful")
+    const successCount = results.filter((r) => r.status === "fulfilled").length
+    const failedCount = results.filter((r) => r.status === "rejected").length
+
+    console.log(`[v0] Supabase keep-alive: ${successCount} queries succeeded, ${failedCount} failed`)
+
     return NextResponse.json({
       success: true,
-      message: "Database pinged successfully",
+      message: "Database pinged successfully with multiple queries",
       timestamp: new Date().toISOString(),
+      queriesExecuted: queries.length,
+      successCount,
+      failedCount,
     })
   } catch (error) {
     console.error("[v0] Keep-alive exception:", error)

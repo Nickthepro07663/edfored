@@ -1,82 +1,165 @@
-# Edfored Tutoring Website - Setup Guide
+# EDforED Tutoring Website - Setup Guide
 
 ## Environment Variables Required
 
-Add these environment variables to your Vercel project:
+Add these environment variables to your Vercel project or .env file:
 
 ### Supabase Configuration
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase URL
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key (admin access)
 - `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` - Development redirect URL (e.g., http://localhost:3000)
 
 ### Venmo Configuration
 - `NEXT_PUBLIC_VENMO_USERNAME` - Your Venmo username (e.g., @edfored)
-- `VENMO_PHONE` - Your Venmo phone number (format: 1234567890)
+- `VENMO_PHONE` - Your Venmo phone number without dashes (format: 5515023368)
 
-### Cron Job Security (Optional but recommended)
-- `CRON_SECRET` - Random secret string for securing the keep-alive endpoint
+### Cron Job Security (Required for keep-alive)
+- `CRON_SECRET` - Random secret string for securing the keep-alive endpoint (generate a secure random string)
 
-### Calendly Configuration
-Update the Calendly URL in the booking page:
-- Replace `https://calendly.com/edfored/session` with your actual Calendly booking link
+### Calendly Configuration (Optional)
+Update the Calendly URL in `app/booking/_components/booking-client-page.tsx`:
+- Replace the Calendly embed URL with your actual Calendly booking link
+- Find: `https://calendly.com/your-username`
+- Replace with your Calendly scheduling page
 
-## Setting Up Venmo
+## Contact Information
 
-1. Download the Venmo mobile app and create an account
+Update these values in your website:
+- **Email**: edfored2025@gmail.com
+- **Phone**: (551) 502-3368
+- **Social Media**: Update Instagram, YouTube, and TikTok links in the footer and contact components
+
+## Setting Up Venmo Payment
+
+1. Download the Venmo mobile app and create/login to your account
 2. Set up your profile with a username (e.g., @edfored)
-3. Add your username to `NEXT_PUBLIC_VENMO_USERNAME`
-4. Add your phone number to `VENMO_PHONE`
-5. Students will see a payment button that generates a Venmo payment link
+3. Add your username to `NEXT_PUBLIC_VENMO_USERNAME` environment variable
+4. Add your phone number to `VENMO_PHONE` (numbers only, no spaces or dashes)
+5. Students will see a payment button that generates a Venmo deep link for easy payment
 
-## Setting Up Calendly
+**Payment Flow:**
+- Student books a session through the website
+- Booking is created in database with "unpaid" status
+- Student clicks Venmo payment button
+- Venmo app opens with pre-filled amount and note
+- Admin marks payment as received in dashboard
 
-1. Go to [Calendly](https://calendly.com)
-2. Create your account and set up your scheduling page
-3. Update the booking page with your Calendly URL
-4. Calendly bookings automatically sync with your Google Calendar, Outlook, etc.
+## Setting Up Calendly (Optional)
+
+1. Go to [Calendly](https://calendly.com) and create an account
+2. Set up your event types (tutoring sessions with different durations)
+3. Configure your availability and calendar sync
+4. Get your Calendly scheduling page URL
+5. Update the booking page component with your URL
+6. Calendly automatically syncs with Google Calendar, Outlook, iCloud, etc.
 
 ## Supabase Keep-Alive System
 
-The app includes an automated keep-alive system to prevent Supabase from pausing:
+The app includes an automated keep-alive system to prevent Supabase free tier from pausing due to inactivity:
 
-1. **Vercel Deployment (Automatic)**
-   - Cron job configured in `vercel.json` runs every 6 hours
-   - No additional setup needed
+### How It Works
+- Makes multiple random database queries every 6 hours
+- Keeps your database active and prevents auto-pause
+- Runs automatically when deployed to Vercel
 
-2. **External Cron Service**
-   - Set up at [cron-job.org](https://cron-job.org) or similar
+### Setup Options
+
+**Option 1: Vercel Deployment (Automatic)**
+- Cron job is configured in `vercel.json`
+- Runs automatically every 6 hours
+- No additional setup needed after deployment
+
+**Option 2: External Cron Service (if not using Vercel)**
+1. Sign up at [cron-job.org](https://cron-job.org) or [EasyCron](https://www.easycron.com)
+2. Create a new cron job:
    - URL: `https://your-domain.com/api/cron/keep-alive`
-   - Schedule: Every 6 hours
-   - Add header: `Authorization: Bearer YOUR_CRON_SECRET`
+   - Schedule: Every 6 hours (e.g., 0 */6 * * *)
+   - Method: GET
+   - Add custom header: `Authorization: Bearer YOUR_CRON_SECRET`
+3. Save and enable the cron job
 
-3. **For Production**: Consider upgrading to Supabase Pro plan ($25/month) to avoid pausing entirely
+**Option 3: Upgrade to Supabase Pro (Production)**
+- For production apps, consider upgrading to Supabase Pro ($25/month)
+- No pausing, better performance, more storage
+- Eliminates need for keep-alive workarounds
 
 See `SUPABASE_SETUP.md` for detailed instructions.
 
 ## Default Admin Credentials
 
-- **Owner Account**
-  - Username: Nick
-  - Password: Nick_0711
+**Important:** Change these credentials after first login!
 
-- **Admin Account**
-  - Username: edfored
-  - Password: Admin
+- **Owner Account** (Full system access)
+  - Username: `Nick`
+  - Password: `Nick_0711`
+  - Access: User management, all admin features
+
+- **Admin Account** (Staff access)
+  - Username: `edfored`
+  - Password: `Admin`
+  - Access: Booking management, payment tracking
 
 ## Database Schema
 
-The app uses Supabase with the following main tables:
-- `profiles` - User accounts with roles (user, admin, staff, owner)
-- `bookings` - Session bookings with payment status and schedule info
+The app uses Supabase PostgreSQL with the following tables:
 
-## Features
+### Core Tables
+- `profiles` - Extended user data (linked to Supabase Auth)
+- `admin_users` - Admin/owner accounts with roles
+- `bookings` - Session bookings with payment status and scheduling
 
-- User authentication with Supabase
-- Role-based access control (Owner, Admin, Staff, User)
-- Booking system with Calendly integration
-- Venmo payment processing
-- Calendar sync capabilities
-- Admin dashboard for managing bookings and payments
-- Owner dashboard for user management
-- Automated Supabase keep-alive system
+### SQL Scripts
+Run these in order from the `/scripts` folder:
+1. `001_create_tables.sql` - Creates initial schema
+2. `002_insert_admin.sql` - Adds default admin account
+3. `003_add_roles_and_permissions.sql` - Adds role system
+4. `004_create_owner_account.sql` - Creates owner account
+
+You can run these directly from the v0 interface - they execute automatically.
+
+## Content Updates Needed
+
+Replace placeholder content with your actual data:
+
+### Images
+- `/public/edfored-team-2025.jpg` - Your current team photo
+- `/public/original-six-members.jpg` - Original founding members photo
+- Add tutor headshots to `/public/` folder
+
+### About Page (`app/about/page.tsx`)
+- Add your actual tutor names, photos, and achievements
+- Add marketing team member names and headshots
+- Update tutor count and town coverage stats
+
+### Social Media Links
+Update in `components/footer.tsx` and `components/contact.tsx`:
+- Instagram: Replace `#` with your Instagram URL
+- YouTube: Replace `#` with your YouTube channel URL
+- TikTok: Replace `#` with your TikTok profile URL
+
+## Features Overview
+
+- **User Authentication**: Secure Supabase Auth with email/password
+- **Role-Based Access**: Owner, Admin, Staff, and User roles
+- **Booking System**: Custom form + optional Calendly integration
+- **Payment Processing**: Venmo deep linking for mobile payments
+- **Calendar Integration**: Via Calendly (syncs to Google, Outlook, etc.)
+- **Admin Dashboard**: Manage bookings, track payments, view calendar
+- **Owner Dashboard**: User management, role assignment, system access
+- **Automated Keep-Alive**: Prevents Supabase free tier from pausing
+
+## Deployment
+
+1. Push your code to a Git repository (GitHub, GitLab, Bitbucket)
+2. Connect to Vercel and deploy
+3. Add all environment variables in Vercel project settings
+4. Vercel will automatically run the cron job for keep-alive
+5. Test the booking flow and payment links
+6. Update admin credentials for security
+
+## Support
+
+For questions or issues:
+- Email: edfored2025@gmail.com
+- Phone: (551) 502-3368

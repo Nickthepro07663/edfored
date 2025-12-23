@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Mail, Phone, MapPin, Clock } from "lucide-react"
+import { Mail, Phone, Instagram, Youtube } from "lucide-react"
+import { SiTiktok } from "react-icons/si"
 
 export function Contact() {
   return (
@@ -19,8 +20,7 @@ export function Contact() {
                 <Mail className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold mb-2 text-foreground">Email Us</h3>
-              <p className="text-sm text-muted-foreground">info@edfored.com</p>
-              <p className="text-sm text-muted-foreground">support@edfored.com</p>
+              <p className="text-sm text-muted-foreground">edfored2025@gmail.com</p>
             </CardContent>
           </Card>
 
@@ -30,30 +30,45 @@ export function Contact() {
                 <Phone className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold mb-2 text-foreground">Call Us</h3>
-              <p className="text-sm text-muted-foreground">(555) 123-4567</p>
-              <p className="text-sm text-muted-foreground">(555) 987-6543</p>
+              <p className="text-sm text-muted-foreground">(551) 502-3368</p>
             </CardContent>
           </Card>
 
           <Card className="border-border">
             <CardContent className="pt-6 text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-6 h-6 text-primary" />
+                <Instagram className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2 text-foreground">Visit Us</h3>
-              <p className="text-sm text-muted-foreground">123 Education Street</p>
-              <p className="text-sm text-muted-foreground">Learning City, LC 12345</p>
+              <h3 className="font-semibold mb-2 text-foreground">Instagram</h3>
+              <a href="#" className="text-sm text-primary hover:underline">
+                @edfored
+              </a>
             </CardContent>
           </Card>
 
           <Card className="border-border">
             <CardContent className="pt-6 text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-6 h-6 text-primary" />
+                <Youtube className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2 text-foreground">Office Hours</h3>
-              <p className="text-sm text-muted-foreground">Mon-Fri: 9am - 8pm</p>
-              <p className="text-sm text-muted-foreground">Sat-Sun: 10am - 6pm</p>
+              <h3 className="font-semibold mb-2 text-foreground">YouTube</h3>
+              <a href="#" className="text-sm text-primary hover:underline">
+                EDforED Tutoring
+              </a>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-8 text-center">
+          <Card className="border-border inline-block">
+            <CardContent className="pt-6 text-center px-8">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <SiTiktok className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2 text-foreground">TikTok</h3>
+              <a href="#" className="text-sm text-primary hover:underline">
+                @edfored
+              </a>
             </CardContent>
           </Card>
         </div>

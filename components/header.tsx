@@ -78,7 +78,7 @@ export function Header() {
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">Edfored</span>
+            <span className="text-xl font-bold text-foreground">EDforED</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -93,25 +93,13 @@ export function Header() {
               href="/services"
               className={`transition-colors ${pathname === "/services" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
             >
-              Services
-            </Link>
-            <Link
-              href="/tutors"
-              className={`transition-colors ${pathname === "/tutors" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
-            >
-              Tutors
-            </Link>
-            <Link
-              href="/pricing"
-              className={`transition-colors ${pathname === "/pricing" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
-            >
-              Pricing
+              Services & Pricing
             </Link>
             <Link
               href="/about"
               className={`transition-colors ${pathname === "/about" ? "text-primary font-semibold" : "text-foreground hover:text-primary"}`}
             >
-              About
+              About & Tutors
             </Link>
             <Link
               href="/faq"
@@ -171,16 +159,10 @@ export function Header() {
               Home
             </Link>
             <Link href="/services" className="text-left text-foreground hover:text-primary transition-colors">
-              Services
-            </Link>
-            <Link href="/tutors" className="text-left text-foreground hover:text-primary transition-colors">
-              Tutors
-            </Link>
-            <Link href="/pricing" className="text-left text-foreground hover:text-primary transition-colors">
-              Pricing
+              Services & Pricing
             </Link>
             <Link href="/about" className="text-left text-foreground hover:text-primary transition-colors">
-              About
+              About & Tutors
             </Link>
             <Link href="/faq" className="text-left text-foreground hover:text-primary transition-colors">
               FAQ
