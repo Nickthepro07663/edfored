@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server"
 
-// This prevents duplicate GoTrueClient instances that cause deployment issues
 export async function proxy(request: NextRequest) {
   // Just pass through - auth checks are done at the page level
   return NextResponse.next()
