@@ -2,18 +2,19 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Users, DollarSign, LogOut, Loader2, Clock, Edit, BarChart3, Eye, FileText } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, DollarSign, Users, Eye, FileText, Edit, LogOut, Loader2, Clock } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { getAllCMSContent, updateCMSContent } from "@/app/actions/cms"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Booking {
   id: string
@@ -38,7 +39,15 @@ export default function AdminDashboard() {
   const [adminRole, setAdminRole] = useState<string | null>(null)
   const [cmsContent, setCmsContent] = useState<any[]>([])
   const [editingSection, setEditingSection] = useState<string | null>(null)
-  const [editContent, setEditContent] = useState<string>("")
+  const [editContent, setEditContent] = useState<string>("") // For advanced mode
+  const [editMode, setEditMode] = useState<"simple" | "advanced">("simple") // For CMS editing mode
+
+  // Simple mode state
+  const [simpleContent, setSimpleContent] = useState<any>({})
+
+  // Advanced mode state (already present but redefined for clarity in updates)
+  const [advancedContent, setAdvancedContent] = useState<string>("")
+
   const [analytics, setAnalytics] = useState<any>({
     pageViews: 0,
     bookings: 0,
@@ -90,7 +99,17 @@ export default function AdminDashboard() {
     if (error) {
       console.error("Error fetching bookings:", error)
     } else {
-      setBookings(data || [])
+      // Map booking data to match the updated Booking interface
+      const formattedBookings = (data || []).map((booking: any) => ({
+        ...booking,
+        student_name: booking.name, // Assuming 'name' from DB maps to 'student_name'
+        name: booking.name, // Keep original 'name' field if it's still used elsewhere or for compatibility
+        phone: booking.phone || "",
+        message: booking.message || "",
+        grade_level: booking.grade_level || "",
+        subject: booking.subject || "",
+      }))
+      setBookings(formattedBookings)
     }
     setIsLoading(false)
   }
@@ -166,25 +185,201 @@ export default function AdminDashboard() {
 
   const handleEditSection = (section: string, content: any) => {
     setEditingSection(section)
-    setEditContent(JSON.stringify(content, null, 2))
+    setSimpleContent(content)
+    setAdvancedContent(JSON.stringify(content, null, 2))
   }
 
   const handleSaveSection = async () => {
     if (!editingSection) return
 
     try {
-      const contentObj = JSON.parse(editContent)
-      const result = await updateCMSContent(editingSection, contentObj, adminRole || "admin")
+      const contentToSave = editMode === "simple" ? simpleContent : JSON.parse(advancedContent)
+
+      const result = await updateCMSContent(editingSection, contentToSave, adminRole || "admin")
 
       if (result.success) {
-        alert("Content updated successfully!")
+        alert("Content updated successfully! The changes will appear on the website.")
         setEditingSection(null)
         loadCMSContent()
       } else {
         alert("Error updating content: " + result.error)
       }
     } catch (error) {
-      alert("Invalid JSON format. Please check your syntax.")
+      alert("Invalid JSON format in advanced mode. Please check your syntax.")
+    }
+  }
+
+  const handleSimpleInputChange = (field: string, value: any) => {
+    setSimpleContent((prev: any) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleStatChange = (index: number, field: string, value: string) => {
+    const newStats = [...(simpleContent.stats || [])]
+    newStats[index] = { ...newStats[index], [field]: value }
+    setSimpleContent((prev: any) => ({
+      ...prev,
+      stats: newStats,
+    }))
+  }
+
+  const handleSocialChange = (platform: string, value: string) => {
+    setSimpleContent((prev: any) => ({
+      ...prev,
+      social: {
+        ...(prev.social || {}),
+        [platform]: value,
+      },
+    }))
+  }
+
+  const renderSimpleEditor = () => {
+    if (!editingSection) return null
+
+    switch (editingSection) {
+      case "hero":
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="headline">Main Headline</Label>
+              <Input
+                id="headline"
+                value={simpleContent.headline || ""}
+                onChange={(e) => handleSimpleInputChange("headline", e.target.value)}
+                placeholder="Enter main headline"
+              />
+            </div>
+            <div>
+              <Label htmlFor="subheadline">Description</Label>
+              <Textarea
+                id="subheadline"
+                value={simpleContent.subheadline || ""}
+                onChange={(e) => handleSimpleInputChange("subheadline", e.target.value)}
+                placeholder="Enter description"
+                rows={4}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Statistics (shown below main text)</Label>
+              {(simpleContent.stats || []).map((stat: any, index: number) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    placeholder="Number (e.g., 20+)"
+                    value={stat.value || ""}
+                    onChange={(e) => handleStatChange(index, "value", e.target.value)}
+                    className="w-32"
+                  />
+                  <Input
+                    placeholder="Label (e.g., Members)"
+                    value={stat.label || ""}
+                    onChange={(e) => handleStatChange(index, "label", e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+
+      case "contact":
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={simpleContent.email || ""}
+                onChange={(e) => handleSimpleInputChange("email", e.target.value)}
+                placeholder="contact@example.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                value={simpleContent.phone || ""}
+                onChange={(e) => handleSimpleInputChange("phone", e.target.value)}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            <div>
+              <Label htmlFor="address">Address/Location</Label>
+              <Input
+                id="address"
+                value={simpleContent.address || ""}
+                onChange={(e) => handleSimpleInputChange("address", e.target.value)}
+                placeholder="City, State"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Social Media Links</Label>
+              <div>
+                <Label htmlFor="instagram" className="text-xs text-muted-foreground">
+                  Instagram
+                </Label>
+                <Input
+                  id="instagram"
+                  value={simpleContent.social?.instagram || ""}
+                  onChange={(e) => handleSocialChange("instagram", e.target.value)}
+                  placeholder="https://instagram.com/yourpage"
+                />
+              </div>
+              <div>
+                <Label htmlFor="youtube" className="text-xs text-muted-foreground">
+                  YouTube
+                </Label>
+                <Input
+                  id="youtube"
+                  value={simpleContent.social?.youtube || ""}
+                  onChange={(e) => handleSocialChange("youtube", e.target.value)}
+                  placeholder="https://youtube.com/@yourchannel"
+                />
+              </div>
+              <div>
+                <Label htmlFor="tiktok" className="text-xs text-muted-foreground">
+                  TikTok
+                </Label>
+                <Input
+                  id="tiktok"
+                  value={simpleContent.social?.tiktok || ""}
+                  onChange={(e) => handleSocialChange("tiktok", e.target.value)}
+                  placeholder="https://tiktok.com/@yourpage"
+                />
+              </div>
+            </div>
+          </div>
+        )
+
+      case "about":
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="mission">Mission Statement</Label>
+              <Textarea
+                id="mission"
+                value={simpleContent.mission || ""}
+                onChange={(e) => handleSimpleInputChange("mission", e.target.value)}
+                placeholder="Enter your mission statement"
+                rows={4}
+              />
+            </div>
+            <div>
+              <Label htmlFor="vision">Vision Statement</Label>
+              <Textarea
+                id="vision"
+                value={simpleContent.vision || ""}
+                onChange={(e) => handleSimpleInputChange("vision", e.target.value)}
+                placeholder="Enter your vision statement"
+                rows={4}
+              />
+            </div>
+          </div>
+        )
+
+      default:
+        return <p className="text-muted-foreground">No simple editor available for this section.</p>
     }
   }
 
@@ -201,24 +396,18 @@ export default function AdminDashboard() {
     .sort((a, b) => new Date(a.preferred_date).getTime() - new Date(b.preferred_date).getTime())
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <header className="border-b bg-white/80 backdrop-blur-sm">
+    <div className="min-h-screen bg-background">
+      <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-80 transition-opacity">
-            <div>
-              <h1 className="text-2xl font-bold text-blue-600">Edfored Admin</h1>
-              <p className="text-sm text-gray-600">Administrative Dashboard</p>
-            </div>
-          </Link>
+          <div>
+            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+            <p className="text-sm text-muted-foreground">{adminRole === "owner" ? "Owner" : "Admin"} Panel</p>
+          </div>
           <div className="flex gap-2">
-            {adminRole === "owner" && (
-              <Link href="/owner">
-                <Button variant="outline" size="sm">
-                  Manage Users
-                </Button>
-              </Link>
-            )}
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
+            <Link href="/">
+              <Button variant="outline">View Website</Button>
+            </Link>
+            <Button variant="destructive" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
@@ -227,25 +416,11 @@ export default function AdminDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Dashboard Overview</h2>
-          <p className="text-gray-600">Manage bookings, content, and view analytics</p>
-        </div>
-
         <Tabs defaultValue="bookings" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="bookings">
-              <Calendar className="h-4 w-4 mr-2" />
-              Bookings
-            </TabsTrigger>
-            <TabsTrigger value="analytics">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="cms">
-              <FileText className="h-4 w-4 mr-2" />
-              Edit Content
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="bookings">Bookings</TabsTrigger>
+            <TabsTrigger value="cms">Edit Website</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
           <TabsContent value="bookings" className="space-y-6">
@@ -426,64 +601,6 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-3">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Page Views</CardTitle>
-                  <Eye className="h-4 w-4 text-blue-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{analytics.pageViews}</div>
-                  <p className="text-xs text-gray-600">Last 30 days</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Bookings Created</CardTitle>
-                  <Calendar className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{analytics.bookings}</div>
-                  <p className="text-xs text-gray-600">Last 30 days</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">User Signups</CardTitle>
-                  <Users className="h-4 w-4 text-purple-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{analytics.signups}</div>
-                  <p className="text-xs text-gray-600">Last 30 days</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Pages</CardTitle>
-                <CardDescription>Most visited pages in the last 30 days</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {analytics.topPages.length > 0 ? (
-                    analytics.topPages.map((page: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{page.path || "/"}</span>
-                        <Badge variant="secondary">{page.count} views</Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-600 text-center py-4">No analytics data available yet</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           <TabsContent value="cms" className="space-y-6">
             <Card>
               <CardHeader>
@@ -526,16 +643,38 @@ export default function AdminDashboard() {
             {editingSection && (
               <Card className="border-blue-500 border-2">
                 <CardHeader>
-                  <CardTitle>Editing: {editingSection}</CardTitle>
-                  <CardDescription>Edit the JSON content below. Make sure to keep valid JSON format.</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Editing: {editingSection}</CardTitle>
+                      <CardDescription>
+                        {editMode === "simple"
+                          ? "Fill out the forms below to update content"
+                          : "Edit the JSON code (Advanced users only)"}
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="edit-mode" className="text-sm">
+                        Advanced Mode
+                      </Label>
+                      <Switch
+                        id="edit-mode"
+                        checked={editMode === "advanced"}
+                        onCheckedChange={(checked) => setEditMode(checked ? "advanced" : "simple")}
+                      />
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Textarea
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    className="font-mono text-sm min-h-[300px]"
-                    placeholder="Edit JSON content here..."
-                  />
+                  {editMode === "simple" ? (
+                    renderSimpleEditor()
+                  ) : (
+                    <Textarea
+                      value={advancedContent}
+                      onChange={(e) => setAdvancedContent(e.target.value)}
+                      className="font-mono text-sm min-h-[300px]"
+                      placeholder="Edit JSON content here..."
+                    />
+                  )}
                   <div className="flex gap-2">
                     <Button onClick={handleSaveSection}>Save Changes</Button>
                     <Button variant="outline" onClick={() => setEditingSection(null)}>
@@ -545,6 +684,67 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Page Views</CardTitle>
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{analytics.pageViews}</div>
+                  <p className="text-xs text-muted-foreground">All time visits</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{analytics.bookings}</div>
+                  <p className="text-xs text-muted-foreground">Session requests</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">User Signups</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{analytics.signups}</div>
+                  <p className="text-xs text-muted-foreground">Registered users</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Pages</CardTitle>
+                <CardDescription>Most visited pages on your website</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {analytics.topPages.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">No analytics data yet</p>
+                ) : (
+                  <div className="space-y-2">
+                    {analytics.topPages.map((page: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{page.path}</span>
+                        </div>
+                        <Badge variant="secondary">{page.count} views</Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>
