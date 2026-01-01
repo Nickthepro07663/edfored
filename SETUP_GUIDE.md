@@ -151,12 +151,29 @@ Update in `components/footer.tsx` and `components/contact.tsx`:
 
 ## Deployment
 
+**Note:** This project has been optimized for deployment by removing middleware complexity that was causing cancellation issues.
+
 1. Push your code to a Git repository (GitHub, GitLab, Bitbucket)
 2. Connect to Vercel and deploy
 3. Add all environment variables in Vercel project settings
 4. Vercel will automatically run the cron job for keep-alive
 5. Test the booking flow and payment links
 6. Update admin credentials for security
+
+## Deployment Troubleshooting
+
+If your deployment is still canceling during initialization:
+
+1. **Check Build Logs**: Look for TypeScript or ESLint errors in the Vercel deployment logs
+2. **Verify Environment Variables**: Ensure all required Supabase variables are set in the Vars section
+3. **Check Supabase Connection**: Make sure your Supabase project is active and not paused
+4. **Contact Support**: Visit vercel.com/help with your project details and error logs
+
+**Common Issues:**
+- Missing environment variables
+- Supabase project paused (run keep-alive endpoint manually)
+- TypeScript compilation errors (check build logs)
+- Large bundle size (ensure images are properly optimized)
 
 ## Support
 
