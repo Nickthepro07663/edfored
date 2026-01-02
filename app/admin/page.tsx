@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -235,6 +235,93 @@ export default function AdminDashboard() {
     }))
   }
 
+  const RichTextEditor = ({
+    value,
+    onChange,
+    placeholder,
+  }: { value: string; onChange: (value: string) => void; placeholder: string }) => {
+    const [selectedText, setSelectedText] = useState("")
+    const [textColor, setTextColor] = useState("#000000")
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const applyFormatting = (format: "bold" | "italic" | "underline" | "color") => {
+      if (!textareaRef.current) return
+      const start = textareaRef.current.selectionStart
+      const end = textareaRef.current.selectionEnd
+      const selectedText = value.substring(start, end)
+
+      if (!selectedText) return
+
+      let formattedText = ""
+      switch (format) {
+        case "bold":
+          formattedText = `<strong>${selectedText}</strong>`
+          break
+        case "italic":
+          formattedText = `<em>${selectedText}</em>`
+          break
+        case "underline":
+          formattedText = `<u>${selectedText}</u>`
+          break
+        case "color":
+          formattedText = `<span style="color: ${textColor}">${selectedText}</span>`
+          break
+      }
+
+      const newValue = value.substring(0, start) + formattedText + value.substring(end)
+      onChange(newValue)
+    }
+
+    return (
+      <div className="space-y-2">
+        <div className="flex gap-2 flex-wrap border rounded-md p-2 bg-muted/50">
+          <Button type="button" variant="outline" size="sm" onClick={() => applyFormatting("bold")} title="Bold">
+            <strong>B</strong>
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => applyFormatting("italic")} title="Italic">
+            <em>I</em>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => applyFormatting("underline")}
+            title="Underline"
+          >
+            <u>U</u>
+          </Button>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={textColor}
+              onChange={(e) => setTextColor(e.target.value)}
+              className="w-8 h-8 rounded border cursor-pointer"
+              title="Text Color"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => applyFormatting("color")}
+              title="Apply Color"
+            >
+              Color
+            </Button>
+          </div>
+        </div>
+        <Textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={6}
+          className="font-sans"
+        />
+        <div className="text-xs text-muted-foreground">Tip: Select text first, then click a formatting button</div>
+      </div>
+    )
+  }
+
   const renderSimpleEditor = () => {
     if (!editingSection) return null
 
@@ -253,12 +340,10 @@ export default function AdminDashboard() {
             </div>
             <div>
               <Label htmlFor="subheadline">Description</Label>
-              <Textarea
-                id="subheadline"
+              <RichTextEditor
                 value={simpleContent.subheadline || ""}
-                onChange={(e) => handleSimpleInputChange("subheadline", e.target.value)}
-                placeholder="Enter description"
-                rows={4}
+                onChange={(value) => handleSimpleInputChange("subheadline", value)}
+                placeholder="Enter description with optional formatting"
               />
             </div>
             <div className="space-y-2">
@@ -357,22 +442,18 @@ export default function AdminDashboard() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="mission">Mission Statement</Label>
-              <Textarea
-                id="mission"
+              <RichTextEditor
                 value={simpleContent.mission || ""}
-                onChange={(e) => handleSimpleInputChange("mission", e.target.value)}
+                onChange={(value) => handleSimpleInputChange("mission", value)}
                 placeholder="Enter your mission statement"
-                rows={4}
               />
             </div>
             <div>
               <Label htmlFor="vision">Vision Statement</Label>
-              <Textarea
-                id="vision"
+              <RichTextEditor
                 value={simpleContent.vision || ""}
-                onChange={(e) => handleSimpleInputChange("vision", e.target.value)}
+                onChange={(value) => handleSimpleInputChange("vision", value)}
                 placeholder="Enter your vision statement"
-                rows={4}
               />
             </div>
           </div>

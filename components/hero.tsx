@@ -3,8 +3,30 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Users, GraduationCap, MapPin } from "lucide-react"
 import Link from "next/link"
+import { useState, useEffect } from "react"
 
 export function Hero() {
+  const [cmsContent, setCmsContent] = useState<any>(null)
+
+  useEffect(() => {
+    fetch("/api/cms/hero")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) setCmsContent(data.content)
+      })
+      .catch((err) => console.error("[v0] Failed to load hero CMS content:", err))
+  }, [])
+
+  const headline = cmsContent?.headline || "High School Tutors for K-8 Students"
+  const subheadline =
+    cmsContent?.subheadline ||
+    "Our younger tutors connect with K–8 students, in a unique way. We help them build confidence, strengthen character, and enjoy school again. We hand-select top students from various schools through a rigorous process including applications, grade reviews, and several interviews. And we're committed to giving back — 10% of our profits support students in South America."
+  const stats = cmsContent?.stats || [
+    { label: "Members", value: "20+" },
+    { label: "Categories", value: "5" },
+    { label: "Towns", value: "10+" },
+  ]
+
   return (
     <section
       id="home"
@@ -14,13 +36,10 @@ export function Hero() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-balance leading-tight">
-              High School Tutors for K-8 Students
+              <span dangerouslySetInnerHTML={{ __html: headline }} />
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Our younger tutors connect with K–8 students, in a unique way. We help them build confidence, strengthen
-              character, and enjoy school again. We hand-select top students from various schools through a rigorous
-              process including applications, grade reviews, and several interviews. And we're committed to giving back
-              — 10% of our profits support students in South America.
+              <span dangerouslySetInnerHTML={{ __html: subheadline }} />
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/booking">
@@ -37,27 +56,21 @@ export function Hero() {
             </div>
 
             <div className="grid grid-cols-3 gap-6 pt-8">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <Users className="w-6 h-6 text-primary" />
+              {stats.map((stat: any, index: number) => (
+                <div key={index} className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                    {index === 0 ? (
+                      <Users className="w-6 h-6 text-primary" />
+                    ) : index === 1 ? (
+                      <GraduationCap className="w-6 h-6 text-primary" />
+                    ) : (
+                      <MapPin className="w-6 h-6 text-primary" />
+                    )}
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
                 </div>
-                <div className="text-2xl font-bold text-foreground">20+</div>
-                <div className="text-sm text-muted-foreground">Members</div>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <GraduationCap className="w-6 h-6 text-primary" />
-                </div>
-                <div className="text-2xl font-bold text-foreground">5</div>
-                <div className="text-sm text-muted-foreground">Categories</div>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                  <MapPin className="w-6 h-6 text-primary" />
-                </div>
-                <div className="text-2xl font-bold text-foreground">10+</div>
-                <div className="text-sm text-muted-foreground">Towns</div>
-              </div>
+              ))}
             </div>
           </div>
 
