@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, DollarSign, Users, Eye, FileText, Edit, LogOut, Loader2, Clock } from "lucide-react"
+import { Calendar, DollarSign, Users, Eye, FileText, LogOut, Loader2, Clock, Plus, Trash2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { getAllCMSContent, updateCMSContent } from "@/app/actions/cms"
@@ -240,17 +240,26 @@ export default function AdminDashboard() {
     onChange,
     placeholder,
   }: { value: string; onChange: (value: string) => void; placeholder: string }) => {
-    const [selectedText, setSelectedText] = useState("")
     const [textColor, setTextColor] = useState("#000000")
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const stripHtml = (html: string) => {
+      const tmp = document.createElement("DIV")
+      tmp.innerHTML = html
+      return tmp.textContent || tmp.innerText || ""
+    }
 
     const applyFormatting = (format: "bold" | "italic" | "underline" | "color") => {
       if (!textareaRef.current) return
       const start = textareaRef.current.selectionStart
       const end = textareaRef.current.selectionEnd
-      const selectedText = value.substring(start, end)
+      const plainText = stripHtml(value)
+      const selectedText = plainText.substring(start, end)
 
-      if (!selectedText) return
+      if (!selectedText) {
+        alert("Please select text first before applying formatting")
+        return
+      }
 
       let formattedText = ""
       switch (format) {
@@ -268,7 +277,7 @@ export default function AdminDashboard() {
           break
       }
 
-      const newValue = value.substring(0, start) + formattedText + value.substring(end)
+      const newValue = plainText.substring(0, start) + formattedText + plainText.substring(end)
       onChange(newValue)
     }
 
@@ -311,13 +320,15 @@ export default function AdminDashboard() {
         </div>
         <Textarea
           ref={textareaRef}
-          value={value}
+          value={stripHtml(value)}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={6}
           className="font-sans"
         />
-        <div className="text-xs text-muted-foreground">Tip: Select text first, then click a formatting button</div>
+        <div className="text-xs text-muted-foreground">
+          Tip: Select text first, then click formatting button. The formatting will be applied automatically.
+        </div>
       </div>
     )
   }
@@ -343,7 +354,7 @@ export default function AdminDashboard() {
               <RichTextEditor
                 value={simpleContent.subheadline || ""}
                 onChange={(value) => handleSimpleInputChange("subheadline", value)}
-                placeholder="Enter description with optional formatting"
+                placeholder="Enter description"
               />
             </div>
             <div className="space-y-2">
@@ -364,6 +375,157 @@ export default function AdminDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+        )
+
+      case "services":
+        return (
+          <div className="space-y-4">
+            <Label>Services List</Label>
+            {(simpleContent.services || []).map((service: any, index: number) => (
+              <Card key={index} className="p-4">
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Service Title (e.g., Academics)"
+                    value={service.title || ""}
+                    onChange={(e) => {
+                      const newServices = [...(simpleContent.services || [])]
+                      newServices[index] = { ...newServices[index], title: e.target.value }
+                      handleSimpleInputChange("services", newServices)
+                    }}
+                  />
+                  <Textarea
+                    placeholder="Description"
+                    value={service.description || ""}
+                    onChange={(e) => {
+                      const newServices = [...(simpleContent.services || [])]
+                      newServices[index] = { ...newServices[index], description: e.target.value }
+                      handleSimpleInputChange("services", newServices)
+                    }}
+                    rows={2}
+                  />
+                  <Input
+                    placeholder="Subjects (comma separated: Math, English, Science)"
+                    value={(service.subjects || []).join(", ")}
+                    onChange={(e) => {
+                      const newServices = [...(simpleContent.services || [])]
+                      newServices[index] = {
+                        ...newServices[index],
+                        subjects: e.target.value.split(",").map((s) => s.trim()),
+                      }
+                      handleSimpleInputChange("services", newServices)
+                    }}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="In-Person Price"
+                      value={service.priceInPerson || ""}
+                      onChange={(e) => {
+                        const newServices = [...(simpleContent.services || [])]
+                        newServices[index] = { ...newServices[index], priceInPerson: e.target.value }
+                        handleSimpleInputChange("services", newServices)
+                      }}
+                    />
+                    <Input
+                      placeholder="Online Price"
+                      value={service.priceOnline || ""}
+                      onChange={(e) => {
+                        const newServices = [...(simpleContent.services || [])]
+                        newServices[index] = { ...newServices[index], priceOnline: e.target.value }
+                        handleSimpleInputChange("services", newServices)
+                      }}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      const newServices = (simpleContent.services || []).filter((_: any, i: number) => i !== index)
+                      handleSimpleInputChange("services", newServices)
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove Service
+                  </Button>
+                </div>
+              </Card>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const newServices = [
+                  ...(simpleContent.services || []),
+                  {
+                    title: "",
+                    description: "",
+                    subjects: [],
+                    priceInPerson: "",
+                    priceOnline: "",
+                  },
+                ]
+                handleSimpleInputChange("services", newServices)
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Service
+            </Button>
+          </div>
+        )
+
+      case "faq":
+        return (
+          <div className="space-y-4">
+            <Label>FAQ Items</Label>
+            {(simpleContent.faqs || []).map((faq: any, index: number) => (
+              <Card key={index} className="p-4">
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Question"
+                    value={faq.question || ""}
+                    onChange={(e) => {
+                      const newFaqs = [...(simpleContent.faqs || [])]
+                      newFaqs[index] = { ...newFaqs[index], question: e.target.value }
+                      handleSimpleInputChange("faqs", newFaqs)
+                    }}
+                  />
+                  <Textarea
+                    placeholder="Answer"
+                    value={faq.answer || ""}
+                    onChange={(e) => {
+                      const newFaqs = [...(simpleContent.faqs || [])]
+                      newFaqs[index] = { ...newFaqs[index], answer: e.target.value }
+                      handleSimpleInputChange("faqs", newFaqs)
+                    }}
+                    rows={3}
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      const newFaqs = (simpleContent.faqs || []).filter((_: any, i: number) => i !== index)
+                      handleSimpleInputChange("faqs", newFaqs)
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove FAQ
+                  </Button>
+                </div>
+              </Card>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const newFaqs = [...(simpleContent.faqs || []), { question: "", answer: "" }]
+                handleSimpleInputChange("faqs", newFaqs)
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add FAQ
+            </Button>
           </div>
         )
 
@@ -685,86 +847,90 @@ export default function AdminDashboard() {
           <TabsContent value="cms" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Content Management</CardTitle>
-                <CardDescription>Edit website content that appears on the homepage and other pages</CardDescription>
+                <CardTitle>Website Content Management</CardTitle>
+                <CardDescription>
+                  Edit your website content easily. Simple Mode shows normal text, Advanced Mode shows code.
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {cmsContent.map((section) => (
-                    <Card key={section.section} className="border-2">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <CardTitle className="text-lg capitalize">{section.section}</CardTitle>
-                            <CardDescription className="text-xs">
-                              Last updated: {new Date(section.updated_at).toLocaleString()}
-                            </CardDescription>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditSection(section.section, section.content)}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto max-h-40">
-                          {JSON.stringify(section.content, null, 2)}
-                        </pre>
-                      </CardContent>
-                    </Card>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {[
+                    { id: "hero", name: "Homepage Hero", icon: "🏠" },
+                    { id: "services", name: "Services & Pricing", icon: "📚" },
+                    { id: "about", name: "About Us", icon: "ℹ️" },
+                    { id: "faq", name: "FAQ", icon: "❓" },
+                    { id: "contact", name: "Contact Info", icon: "📧" },
+                  ].map((section) => (
+                    <Button
+                      key={section.id}
+                      variant="outline"
+                      className="h-auto flex-col gap-2 p-6 bg-transparent"
+                      onClick={() => {
+                        const content = cmsContent.find((c) => c.section === section.id)?.content || {}
+                        handleEditSection(section.id, content)
+                      }}
+                    >
+                      <span className="text-3xl">{section.icon}</span>
+                      <span>{section.name}</span>
+                    </Button>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
 
-            {editingSection && (
-              <Card className="border-blue-500 border-2">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Editing: {editingSection}</CardTitle>
+                {editingSection && (
+                  <Card className="border-2 border-primary">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle>Editing: {editingSection.toUpperCase()}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="edit-mode" className="text-sm">
+                            Mode:
+                          </Label>
+                          <Switch
+                            id="edit-mode"
+                            checked={editMode === "advanced"}
+                            onCheckedChange={(checked) => setEditMode(checked ? "advanced" : "simple")}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            {editMode === "simple" ? "Simple" : "Advanced"}
+                          </span>
+                        </div>
+                      </div>
                       <CardDescription>
                         {editMode === "simple"
-                          ? "Fill out the forms below to update content"
-                          : "Edit the JSON code (Advanced users only)"}
+                          ? "Edit content with easy-to-use fields"
+                          : "Advanced: Edit raw JSON (for technical users)"}
                       </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="edit-mode" className="text-sm">
-                        Advanced Mode
-                      </Label>
-                      <Switch
-                        id="edit-mode"
-                        checked={editMode === "advanced"}
-                        onCheckedChange={(checked) => setEditMode(checked ? "advanced" : "simple")}
-                      />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {editMode === "simple" ? (
-                    renderSimpleEditor()
-                  ) : (
-                    <Textarea
-                      value={advancedContent}
-                      onChange={(e) => setAdvancedContent(e.target.value)}
-                      className="font-mono text-sm min-h-[300px]"
-                      placeholder="Edit JSON content here..."
-                    />
-                  )}
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveSection}>Save Changes</Button>
-                    <Button variant="outline" onClick={() => setEditingSection(null)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {editMode === "simple" ? (
+                        renderSimpleEditor()
+                      ) : (
+                        <div>
+                          <Label htmlFor="advanced-editor">JSON Content</Label>
+                          <Textarea
+                            id="advanced-editor"
+                            value={advancedContent}
+                            onChange={(e) => setAdvancedContent(e.target.value)}
+                            rows={15}
+                            className="font-mono text-sm"
+                            placeholder="Edit JSON content..."
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button onClick={handleSaveSection} className="flex-1">
+                          Save Changes
+                        </Button>
+                        <Button variant="outline" onClick={() => setEditingSection(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
