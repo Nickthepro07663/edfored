@@ -1,9 +1,12 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, Languages, Music, Code, ChevronRight as ChessKnight, Users } from "lucide-react"
 
-const services = [
+const defaultServices = [
   {
-    icon: BookOpen,
+    icon: "BookOpen",
     title: "Academics",
     description: "Taught by top students, we teach K-8 in various school subjects.",
     subjects: ["Math", "English", "Science", "History"],
@@ -11,7 +14,7 @@ const services = [
     priceOnline: "$20.00/hr",
   },
   {
-    icon: Languages,
+    icon: "Languages",
     title: "Languages",
     description:
       "Taught by tutors with experience and proficiency in the language, we teach beginner-intermediate students.",
@@ -20,7 +23,7 @@ const services = [
     priceOnline: "$20.00/hr",
   },
   {
-    icon: Music,
+    icon: "Music",
     title: "Music",
     description:
       "Taught by tutors with proficiency and experience in the instrument. All tutors have awards or play in a higher band. For beginner-intermediate students.",
@@ -29,7 +32,7 @@ const services = [
     priceOnline: "$25.00/hr",
   },
   {
-    icon: Code,
+    icon: "Code",
     title: "Computer Science",
     description: "Taught by tutors with proficiency and certification in coding. For beginner-intermediate students.",
     subjects: ["Python"],
@@ -37,7 +40,7 @@ const services = [
     priceOnline: "$25.00/hr",
   },
   {
-    icon: ChessKnight,
+    icon: "ChessKnight",
     title: "Chess",
     description:
       "Taught by Candidate Master Leon S., this class is for beginner-intermediate students (no elo-1100 elo students).",
@@ -46,7 +49,7 @@ const services = [
     priceOnline: "$25.00/hr",
   },
   {
-    icon: Users,
+    icon: "Users",
     title: "Group Lessons",
     description: "Coming soon! Group lessons for multiple students learning together.",
     subjects: ["Various Subjects"],
@@ -55,21 +58,46 @@ const services = [
   },
 ]
 
+const iconMap: any = {
+  BookOpen,
+  Languages,
+  Music,
+  Code,
+  ChessKnight,
+  Users,
+}
+
 export function Services() {
+  const [services, setServices] = useState(defaultServices)
+  const [heading, setHeading] = useState("Our Services & Pricing")
+  const [description, setDescription] = useState(
+    "Our tutoring services are taught by qualified high-schoolers with experience and recognition in their subjects.",
+  )
+
+  useEffect(() => {
+    fetch("/api/cms/services")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.content) {
+          if (data.content.services) setServices(data.content.services)
+          if (data.content.heading) setHeading(data.content.heading)
+          if (data.content.description) setDescription(data.content.description)
+        }
+      })
+      .catch((error) => console.error("Failed to load services:", error))
+  }, [])
+
   return (
     <section id="services" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">Our Services & Pricing</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Our tutoring services are taught by qualified high-schoolers with experience and recognition in their
-            subjects.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">{heading}</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">{description}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => {
-            const Icon = service.icon
+            const Icon = iconMap[service.icon] || BookOpen
             return (
               <Card key={index} className="hover:shadow-lg transition-shadow border-border">
                 <CardHeader>
