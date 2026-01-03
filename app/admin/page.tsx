@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/components/ui/use-toast" // Import useToast
 
 interface Booking {
   id: string
@@ -32,7 +33,8 @@ interface Booking {
   created_at: string
 }
 
-export default function AdminDashboard() {
+export default function AdminPage() {
+  // Changed function name from AdminDashboard to AdminPage
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -54,10 +56,38 @@ export default function AdminDashboard() {
     signups: 0,
     topPages: [],
   })
+
+  // New state for banners
+  const [banners, setBanners] = useState<any[]>([])
+  const [editingBanner, setEditingBanner] = useState<any>(null)
+  const [bannerForm, setBannerForm] = useState({
+    message: "",
+    link_url: "",
+    link_text: "",
+    background_color: "#3B82F6",
+    text_color: "#FFFFFF",
+    is_active: true,
+  })
+
+  // New state for tutors
+  const [tutors, setTutors] = useState<any[]>([])
+  const [editingTutor, setEditingTutor] = useState<any>(null)
+  const [tutorForm, setTutorForm] = useState({
+    name: "",
+    bio: "",
+    subjects: [] as string[],
+    image_url: "",
+    display_order: 0,
+    is_active: true,
+  })
+
   const router = useRouter()
   const supabase = createClient()
+  const { toast } = useToast() // Initialize useToast
 
+  // Updated useEffect to include new fetches and changed function name
   useEffect(() => {
+    // checkAuth() // Assuming checkAuth is a function that handles authentication logic
     const adminSessionStr = localStorage.getItem("adminSession")
     const isActive = sessionStorage.getItem("admin_active")
 
@@ -85,12 +115,14 @@ export default function AdminDashboard() {
       setAdminRole(sessionData.role)
       setIsAuthenticated(true)
       fetchBookings()
-      loadCMSContent()
-      loadAnalytics()
+      loadCMSContent() // Renamed from fetchCMSContent for consistency
+      loadAnalytics() // Renamed from fetchAnalytics for consistency
+      fetchBanners()
+      fetchTutors()
     } catch (error) {
       router.push("/auth/admin-login")
     }
-  }, [router])
+  }, [router]) // Added router to dependency array
 
   const fetchBookings = async () => {
     setIsLoading(true)
@@ -115,6 +147,7 @@ export default function AdminDashboard() {
   }
 
   const loadCMSContent = async () => {
+    // Renamed from fetchCMSContent
     try {
       const content = await getAllCMSContent()
       setCmsContent(content)
@@ -124,6 +157,7 @@ export default function AdminDashboard() {
   }
 
   const loadAnalytics = async () => {
+    // Renamed from fetchAnalytics
     try {
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - 30)
@@ -154,6 +188,32 @@ export default function AdminDashboard() {
       setAnalytics({ pageViews, bookings: bookingEvents, signups, topPages })
     } catch (error) {
       console.error("[v0] Error loading analytics:", error)
+    }
+  }
+
+  // New fetchBanners function
+  const fetchBanners = async () => {
+    try {
+      const response = await fetch("/api/banners/all")
+      if (response.ok) {
+        const data = await response.json()
+        setBanners(data)
+      }
+    } catch (error) {
+      console.error("Error fetching banners:", error)
+    }
+  }
+
+  // New fetchTutors function
+  const fetchTutors = async () => {
+    try {
+      const response = await fetch("/api/tutors")
+      if (response.ok) {
+        const data = await response.json()
+        setTutors(data)
+      }
+    } catch (error) {
+      console.error("Error fetching tutors:", error)
     }
   }
 
@@ -206,6 +266,124 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       alert("Invalid JSON format in advanced mode. Please check your syntax.")
+    }
+  }
+
+  // New handleSaveBanner function
+  const handleSaveBanner = async () => {
+    try {
+      const url = editingBanner ? `/api/banners/${editingBanner.id}` : "/api/banners"
+      const method = editingBanner ? "PUT" : "POST"
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bannerForm),
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: `Banner ${editingBanner ? "updated" : "created"} successfully!`,
+        })
+        fetchBanners()
+        setEditingBanner(null)
+        setBannerForm({
+          message: "",
+          link_url: "",
+          link_text: "",
+          background_color: "#3B82F6",
+          text_color: "#FFFFFF",
+          is_active: true,
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save banner",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // New handleDeleteBanner function
+  const handleDeleteBanner = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this banner?")) return
+
+    try {
+      const response = await fetch(`/api/banners/${id}`, { method: "DELETE" })
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Banner deleted successfully!",
+        })
+        fetchBanners()
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete banner",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // New handleSaveTutor function
+  const handleSaveTutor = async () => {
+    try {
+      const url = editingTutor ? `/api/tutors/${editingTutor.id}` : "/api/tutors"
+      const method = editingTutor ? "PUT" : "POST"
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tutorForm),
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: `Tutor ${editingTutor ? "updated" : "added"} successfully!`,
+        })
+        fetchTutors()
+        setEditingTutor(null)
+        setTutorForm({
+          name: "",
+          bio: "",
+          subjects: [],
+          image_url: "",
+          display_order: 0,
+          is_active: true,
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save tutor",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // New handleDeleteTutor function
+  const handleDeleteTutor = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this tutor?")) return
+
+    try {
+      const response = await fetch(`/api/tutors/${id}`, { method: "DELETE" })
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Tutor deleted successfully!",
+        })
+        fetchTutors()
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete tutor",
+        variant: "destructive",
+      })
     }
   }
 
@@ -660,9 +838,11 @@ export default function AdminDashboard() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="bookings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
             <TabsTrigger value="cms">Edit Website</TabsTrigger>
+            <TabsTrigger value="banners">Banners</TabsTrigger>
+            <TabsTrigger value="tutors">Tutors</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -929,6 +1109,387 @@ export default function AdminDashboard() {
                     </CardContent>
                   </Card>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="banners" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Announcement Banners</CardTitle>
+                <CardDescription>
+                  Create and manage promotional banners that appear at the top of your website
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <Button
+                  onClick={() => {
+                    setEditingBanner(null)
+                    setBannerForm({
+                      message: "",
+                      link_url: "",
+                      link_text: "",
+                      background_color: "#3B82F6",
+                      text_color: "#FFFFFF",
+                      is_active: true,
+                    })
+                  }}
+                >
+                  + Create New Banner
+                </Button>
+
+                {(editingBanner || bannerForm.message) && (
+                  <Card className="border-2 border-primary">
+                    <CardHeader>
+                      <CardTitle>{editingBanner ? "Edit Banner" : "New Banner"}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="banner-message">Banner Message</Label>
+                        <Input
+                          id="banner-message"
+                          value={bannerForm.message}
+                          onChange={(e) => setBannerForm({ ...bannerForm, message: e.target.value })}
+                          placeholder="🎉 Special Offer: 20% off your first session!"
+                        />
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label htmlFor="banner-link">Link URL (optional)</Label>
+                          <Input
+                            id="banner-link"
+                            value={bannerForm.link_url}
+                            onChange={(e) => setBannerForm({ ...bannerForm, link_url: e.target.value })}
+                            placeholder="/booking"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="banner-link-text">Link Text (optional)</Label>
+                          <Input
+                            id="banner-link-text"
+                            value={bannerForm.link_text}
+                            onChange={(e) => setBannerForm({ ...bannerForm, link_text: e.target.value })}
+                            placeholder="Book Now"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label htmlFor="banner-bg-color">Background Color</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="banner-bg-color"
+                              type="color"
+                              value={bannerForm.background_color}
+                              onChange={(e) => setBannerForm({ ...bannerForm, background_color: e.target.value })}
+                              className="w-20 h-10"
+                            />
+                            <Input
+                              value={bannerForm.background_color}
+                              onChange={(e) => setBannerForm({ ...bannerForm, background_color: e.target.value })}
+                              placeholder="#3B82F6"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="banner-text-color">Text Color</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="banner-text-color"
+                              type="color"
+                              value={bannerForm.text_color}
+                              onChange={(e) => setBannerForm({ ...bannerForm, text_color: e.target.value })}
+                              className="w-20 h-10"
+                            />
+                            <Input
+                              value={bannerForm.text_color}
+                              onChange={(e) => setBannerForm({ ...bannerForm, text_color: e.target.value })}
+                              placeholder="#FFFFFF"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="banner-active"
+                          checked={bannerForm.is_active}
+                          onChange={(e) => setBannerForm({ ...bannerForm, is_active: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        <Label htmlFor="banner-active">Active (shown on website)</Label>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button onClick={handleSaveBanner} className="flex-1">
+                          Save Banner
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setEditingBanner(null)
+                            setBannerForm({
+                              message: "",
+                              link_url: "",
+                              link_text: "",
+                              background_color: "#3B82F6",
+                              text_color: "#FFFFFF",
+                              is_active: true,
+                            })
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Existing Banners</h3>
+                  {banners.length === 0 ? (
+                    <p className="text-muted-foreground">No banners created yet</p>
+                  ) : (
+                    banners.map((banner) => (
+                      <Card key={banner.id} className={!banner.is_active ? "opacity-50" : ""}>
+                        <CardContent className="pt-6">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div
+                                className="p-3 rounded-md mb-2"
+                                style={{
+                                  backgroundColor: banner.background_color,
+                                  color: banner.text_color,
+                                }}
+                              >
+                                {banner.message}
+                                {banner.link_text && <span className="ml-2 underline">→ {banner.link_text}</span>}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Status: {banner.is_active ? "✅ Active" : "❌ Inactive"}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingBanner(banner)
+                                  setBannerForm({
+                                    message: banner.message,
+                                    link_url: banner.link_url || "",
+                                    link_text: banner.link_text || "",
+                                    background_color: banner.background_color,
+                                    text_color: banner.text_color,
+                                    is_active: banner.is_active,
+                                  })
+                                }}
+                              >
+                                Edit
+                              </Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleDeleteBanner(banner.id)}>
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tutors" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Manage Tutors</CardTitle>
+                <CardDescription>Add, edit, or remove tutors from your team</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <Button
+                  onClick={() => {
+                    setEditingTutor(null)
+                    setTutorForm({
+                      name: "",
+                      bio: "",
+                      subjects: [],
+                      image_url: "",
+                      display_order: 0,
+                      is_active: true,
+                    })
+                  }}
+                >
+                  + Add New Tutor
+                </Button>
+
+                {(editingTutor || tutorForm.name) && (
+                  <Card className="border-2 border-primary">
+                    <CardHeader>
+                      <CardTitle>{editingTutor ? "Edit Tutor" : "New Tutor"}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="tutor-name">Name</Label>
+                        <Input
+                          id="tutor-name"
+                          value={tutorForm.name}
+                          onChange={(e) => setTutorForm({ ...tutorForm, name: e.target.value })}
+                          placeholder="Sarah Johnson"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="tutor-bio">Bio</Label>
+                        <Textarea
+                          id="tutor-bio"
+                          value={tutorForm.bio}
+                          onChange={(e) => setTutorForm({ ...tutorForm, bio: e.target.value })}
+                          placeholder="High school senior specializing in mathematics..."
+                          rows={3}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="tutor-subjects">Subjects (comma separated)</Label>
+                        <Input
+                          id="tutor-subjects"
+                          value={tutorForm.subjects.join(", ")}
+                          onChange={(e) =>
+                            setTutorForm({ ...tutorForm, subjects: e.target.value.split(",").map((s) => s.trim()) })
+                          }
+                          placeholder="Math, Science, Physics"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="tutor-image">Image URL</Label>
+                        <Input
+                          id="tutor-image"
+                          value={tutorForm.image_url}
+                          onChange={(e) => setTutorForm({ ...tutorForm, image_url: e.target.value })}
+                          placeholder="/professional-woman-smiling.png"
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Upload images to /public folder or use a URL
+                        </p>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="tutor-order">Display Order</Label>
+                        <Input
+                          id="tutor-order"
+                          type="number"
+                          value={tutorForm.display_order}
+                          onChange={(e) =>
+                            setTutorForm({ ...tutorForm, display_order: Number.parseInt(e.target.value) })
+                          }
+                          placeholder="0"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="tutor-active"
+                          checked={tutorForm.is_active}
+                          onChange={(e) => setTutorForm({ ...tutorForm, is_active: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        <Label htmlFor="tutor-active">Active (shown on website)</Label>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button onClick={handleSaveTutor} className="flex-1">
+                          Save Tutor
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setEditingTutor(null)
+                            setTutorForm({
+                              name: "",
+                              bio: "",
+                              subjects: [],
+                              image_url: "",
+                              display_order: 0,
+                              is_active: true,
+                            })
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {tutors.map((tutor) => (
+                    <Card key={tutor.id} className={!tutor.is_active ? "opacity-50" : ""}>
+                      <CardContent className="pt-6">
+                        <div className="flex flex-col items-center text-center gap-4">
+                          {tutor.image_url && (
+                            <img
+                              src={tutor.image_url || "/placeholder.svg"}
+                              alt={tutor.name}
+                              className="w-24 h-24 rounded-full object-cover"
+                            />
+                          )}
+                          <div>
+                            <h3 className="font-semibold">{tutor.name}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">{tutor.bio}</p>
+                            <div className="flex flex-wrap gap-1 mt-2 justify-center">
+                              {tutor.subjects?.map((subject: string) => (
+                                <span
+                                  key={subject}
+                                  className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
+                                >
+                                  {subject}
+                                </span>
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {tutor.is_active ? "✅ Active" : "❌ Inactive"}
+                            </p>
+                          </div>
+                          <div className="flex gap-2 w-full">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 bg-transparent"
+                              onClick={() => {
+                                setEditingTutor(tutor)
+                                setTutorForm({
+                                  name: tutor.name,
+                                  bio: tutor.bio || "",
+                                  subjects: tutor.subjects || [],
+                                  image_url: tutor.image_url || "",
+                                  display_order: tutor.display_order || 0,
+                                  is_active: tutor.is_active,
+                                })
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleDeleteTutor(tutor.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
